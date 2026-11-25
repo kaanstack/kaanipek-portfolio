@@ -1408,6 +1408,10 @@ body.light-theme {
 .news-read-hint{text-decoration:none}
 .news-read-hint:hover{text-decoration:underline}
 .radar-source-note{margin-top:1rem;line-height:1.6}
+.radar-load-more-wrap{display:flex;justify-content:center;margin-top:1.25rem}
+.radar-load-more{border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);border-radius:10px;padding:.75rem 1.2rem;font:inherit;font-size:.86rem;font-weight:700;cursor:pointer;transition:border-color .2s,transform .2s}
+.radar-load-more:hover{border-color:var(--accent-cyan);transform:translateY(-1px)}
+.radar-load-more[hidden]{display:none}
 @media(max-width:720px){.radar-head-actions{width:100%;justify-content:space-between}.news-card{align-items:flex-start}.news-read-hint{padding-top:.2rem}.news-card-meta{gap:.45rem .7rem}}
 /* TECH RADAR DETAIL */
 .news-detail-main{max-width:900px;margin:0 auto;padding:3rem 1.25rem 5rem}
