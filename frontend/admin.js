@@ -4,6 +4,7 @@
   const SUPABASE_URL = "https://dkhkvpspgniygdqgwtyh.supabase.co";
   const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_MPa3mW5WwmD3eVt_PI2X2Q_tqVCYhmd";
   const ADMIN_UID = "03347b3f-833f-4ff0-97d2-2dd1e4348b3f";
+  const normalizeUid = (value) => String(value || "").trim().toLowerCase();
   const STATUS_LABELS = {
     received: "Talep alındı",
     in_progress: "İnceleniyor",
@@ -162,7 +163,7 @@
   async function startSession() {
     const { data: { session }, error } = await supabase.auth.getSession();
     if (error) throw error;
-    if (session?.user?.id === ADMIN_UID) {
+    if (normalizeUid(session?.user?.id) === normalizeUid(ADMIN_UID)) {
       showDashboard(true);
       await loadTickets();
       return;
@@ -183,9 +184,10 @@
 
     if (error) {
       setMessage(loginMessage, "Giriş başarısız. E-posta veya şifreni kontrol et.", true);
-    } else if (data.user?.id !== ADMIN_UID) {
+    } else if (normalizeUid(data.user?.id) !== normalizeUid(ADMIN_UID)) {
+      const returnedUid = data.user?.id || "(Supabase kullanıcı ID döndürmedi)";
       await supabase.auth.signOut();
-      setMessage(loginMessage, "Bu hesap yönetici olarak yetkili değil.", true);
+      setMessage(loginMessage, "Yönetici ID eşleşmedi. Giriş yapan hesabın Supabase ID değeri: " + returnedUid, true);
     } else {
       showDashboard(true);
       await loadTickets();
