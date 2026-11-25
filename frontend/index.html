@@ -31,7 +31,7 @@
                 <span class="brand-name">kaanipek<span class="accent">.net.tr</span></span>
             </a>
 
-            <nav class="nav-links">
+            <nav class="nav-links" id="primaryNav" aria-label="Ana gezinme">
                 <a href="#about" data-tr="Hakkımda" data-en="About">Hakkımda</a>
                 <a href="#experience" data-tr="Deneyim" data-en="Experience">Deneyim</a>
                 <a href="#projects" data-tr="Projeler" data-en="Projects">Projeler</a>
@@ -39,6 +39,9 @@
                 <a href="#ticket" data-tr="Ticket & İletişim" data-en="Ticket & Contact">Ticket & İletişim</a>
             </nav>
 
+            <button type="button" id="menuToggleBtn" class="menu-toggle" aria-label="Menüyü Aç" aria-expanded="false" aria-controls="primaryNav">
+                <span></span><span></span><span></span>
+            </button>
             <div class="nav-controls">
                 <div class="lang-switch" role="group" aria-label="Dil Seçimi">
                     <button type="button" class="lang-btn active" data-lang="tr">TR</button>
