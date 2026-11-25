@@ -19,10 +19,7 @@
     const detailEl = document.getElementById("blog-detail");
     const filtersEl = document.getElementById("blog-filters");
     const headerEl = document.querySelector(".blog-header");
-    const loginPanel = document.getElementById("admin-login-panel");
-    const loginForm = document.getElementById("admin-login-form");
-    const loginToggle = document.getElementById("adminLoginToggle");
-    const loginCancel = document.getElementById("adminLoginCancel");
+    const adminMode = new URLSearchParams(location.search).get("yonetim") === "1";
     const logoutButton = document.getElementById("adminLogout");
     const addButton = document.getElementById("newPostToggle");
     const formPanel = document.getElementById("blog-form-panel");
@@ -128,8 +125,6 @@
     }
     const updateAdminUI = () => {
       [addButton, copyButton, logoutButton].forEach(el => el?.classList.toggle("hidden", !isAdmin));
-      loginToggle?.classList.toggle("hidden", isAdmin);
-      loginPanel?.classList.add("hidden");
       if (!isAdmin) {
         formPanel?.classList.add("hidden");
         addButton?.setAttribute("aria-expanded", "false");
@@ -317,26 +312,6 @@
       if (location.pathname.startsWith("/blog/")) showListRoute(true);
     }
 
-    loginToggle?.addEventListener("click", () => loginPanel.classList.toggle("hidden"));
-    loginCancel?.addEventListener("click", () => loginPanel.classList.add("hidden"));
-    loginForm?.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      if (!supabaseClient) return setStatus("Supabase bağlantısı hazır değil.",true);
-      const email = document.getElementById("adminEmail").value.trim();
-      const password = document.getElementById("adminPassword").value;
-      const {data,error} = await supabaseClient.auth.signInWithPassword({email,password});
-      if (error) { setStatus("Giriş başarısız: " + error.message,true); return; }
-      if (data.user?.id !== ADMIN_UID) {
-        await supabaseClient.auth.signOut();
-        setStatus("Bu hesap blog yöneticisi olarak yetkili değil.",true);
-        return;
-      }
-      isAdmin = true;
-      updateAdminUI();
-      setStatus("Yönetici girişi başarılı.");
-      await loadPosts();
-    });
-
     logoutButton?.addEventListener("click", async () => {
       await supabaseClient.auth.signOut();
       isAdmin = false;
@@ -440,8 +415,8 @@
     if (SUPABASE_URL.startsWith("https://") && SUPABASE_ANON_KEY && window.supabase?.createClient) {
       supabaseClient = window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
       const {data:{session}} = await supabaseClient.auth.getSession();
-      isAdmin = session?.user?.id === ADMIN_UID;
-      if (session && !isAdmin) await supabaseClient.auth.signOut();
+      isAdmin = adminMode && session?.user?.id === ADMIN_UID;
+      if (adminMode && session && session.user?.id !== ADMIN_UID) await supabaseClient.auth.signOut();
       updateAdminUI();
       try {
         await loadPosts();
