@@ -37,35 +37,88 @@
 
     <section id="dashboardView" class="hidden">
       <div class="admin-heading">
-        <div><span class="admin-eyebrow">OVERVIEW</span><h1>Dashboard</h1><p class="admin-muted">Portföyünün yönetim merkezi.</p></div>
+        <div><span class="admin-eyebrow">CONTROL CENTER</span><h1>Yönetim paneli</h1><p class="admin-muted">Portföyünün yönetim merkezi.</p></div>
         <button class="btn btn-secondary" id="refreshButton" type="button">↻ Yenile</button>
       </div>
 
       <div class="admin-stats">
-        <article class="admin-stat card"><span>Toplam talep</span><strong id="totalCount">—</strong></article>
+        <article class="admin-stat card"><span>Aktif talep</span><strong id="totalCount">—</strong></article>
         <article class="admin-stat card"><span>Yeni / bekleyen</span><strong id="receivedCount">—</strong></article>
         <article class="admin-stat card"><span>İşlemde</span><strong id="progressCount">—</strong></article>
         <article class="admin-stat card"><span>Çözümlenen</span><strong id="resolvedCount">—</strong></article>
       </div>
 
-      <div class="admin-section-heading">
-        <div><h2>Destek talepleri</h2><p class="admin-muted">Talepleri incele ve durumlarını güncelle.</p></div>
-        <a class="btn btn-secondary" href="blog.html">Blog yönetimine git ↗</a>
-      </div>
+      <nav class="admin-tabs" aria-label="Yönetim bölümleri">
+        <button class="admin-tab is-active" type="button" data-view="ticketsView">Destek talepleri</button>
+        <button class="admin-tab" type="button" data-view="archiveView">Arşiv</button>
+        <button class="admin-tab" type="button" data-view="versionsView">Sürümler</button>
+      </nav>
 
-      <div class="admin-toolbar card">
-        <input id="ticketSearch" type="search" placeholder="Talep no, isim, e-posta veya içerik ara..." aria-label="Taleplerde ara">
-        <select id="statusFilter" aria-label="Duruma göre filtrele">
-          <option value="all">Tüm durumlar</option>
-          <option value="received">Talep alındı</option>
-          <option value="in_progress">İnceleniyor</option>
-          <option value="resolved">Çözüldü</option>
-          <option value="closed">Kapatıldı</option>
-        </select>
-      </div>
+      <section id="ticketsView" class="admin-panel-view">
+        <div class="admin-section-heading">
+          <div><h2>Destek talepleri</h2><p class="admin-muted">Aktif talepleri yönet. Eski kayıtları arşivleyebilirsin.</p></div>
+          <a class="btn btn-secondary" href="blog.html">Blog yönetimine git ↗</a>
+        </div>
+        <div class="admin-toolbar card">
+          <input id="ticketSearch" type="search" placeholder="Talep no, isim, e-posta veya içerik ara..." aria-label="Taleplerde ara">
+          <select id="statusFilter" aria-label="Duruma göre filtrele">
+            <option value="all">Tüm durumlar</option>
+            <option value="received">Talep alındı</option>
+            <option value="in_progress">İnceleniyor</option>
+            <option value="resolved">Çözüldü</option>
+            <option value="closed">Kapatıldı</option>
+          </select>
+        </div>
+        <p id="ticketsMessage" class="admin-message" role="status" aria-live="polite"></p>
+        <div id="ticketList" class="admin-ticket-list" aria-live="polite"></div>
+        <div class="admin-pagination">
+          <button class="btn btn-secondary" id="ticketsPrev" type="button">← Önceki</button>
+          <span id="ticketsPageInfo" class="admin-muted">Sayfa 1</span>
+          <button class="btn btn-secondary" id="ticketsNext" type="button">Sonraki →</button>
+        </div>
+      </section>
 
-      <p id="dashboardMessage" class="admin-message" role="status" aria-live="polite"></p>
-      <div id="ticketList" class="admin-ticket-list" aria-live="polite"></div>
+      <section id="archiveView" class="admin-panel-view hidden">
+        <div class="admin-section-heading">
+          <div><h2>Arşiv</h2><p class="admin-muted">Arşivlenen talepler ana listeden çıkarılır, kayıtlar korunur.</p></div>
+        </div>
+        <div class="admin-toolbar card">
+          <input id="archiveSearch" type="search" placeholder="Arşivde ara..." aria-label="Arşivde ara">
+          <select id="archiveStatusFilter" aria-label="Arşiv durumuna göre filtrele">
+            <option value="all">Tüm durumlar</option>
+            <option value="received">Talep alındı</option>
+            <option value="in_progress">İnceleniyor</option>
+            <option value="resolved">Çözüldü</option>
+            <option value="closed">Kapatıldı</option>
+          </select>
+        </div>
+        <p id="archiveMessage" class="admin-message" role="status" aria-live="polite"></p>
+        <div id="archiveList" class="admin-ticket-list" aria-live="polite"></div>
+        <div class="admin-pagination">
+          <button class="btn btn-secondary" id="archivePrev" type="button">← Önceki</button>
+          <span id="archivePageInfo" class="admin-muted">Sayfa 1</span>
+          <button class="btn btn-secondary" id="archiveNext" type="button">Sonraki →</button>
+        </div>
+      </section>
+
+      <section id="versionsView" class="admin-panel-view hidden">
+        <div class="admin-section-heading">
+          <div><h2>Sürüm yönetimi</h2><p class="admin-muted">Yayınladığın önemli güncellemeleri ve ilgili GitHub commit'lerini kaydet.</p></div>
+        </div>
+        <form id="versionForm" class="card admin-version-form">
+          <h3>Yeni sürüm ekle</h3>
+          <div class="admin-version-fields">
+            <label>Sürüm numarası<input id="versionNumber" type="text" placeholder="1.2.0" maxlength="30" required></label>
+            <label>Yayın tarihi<input id="versionDate" type="date" required></label>
+            <label class="admin-version-commit">GitHub commit bağlantısı <span class="admin-muted">(isteğe bağlı)</span><input id="versionCommit" type="url" placeholder="https://github.com/kullanici/depo/commit/..."></label>
+          </div>
+          <label for="versionNotes">Değişiklik notları</label>
+          <textarea id="versionNotes" rows="4" maxlength="4000" placeholder="Bu sürümde neler değişti?" required></textarea>
+          <button class="btn btn-primary" id="addVersionButton" type="submit">Sürümü kaydet</button>
+        </form>
+        <p id="versionsMessage" class="admin-message" role="status" aria-live="polite"></p>
+        <div id="versionList" class="admin-version-list"></div>
+      </section>
     </section>
   </main>
 
