@@ -233,35 +233,80 @@ document.addEventListener('DOMContentLoaded', () => {
     const ticketBadge = document.getElementById('generatedTicketBadge');
     const ticketText = document.getElementById('ticketSuccessText');
     const hiddenIdInput = document.getElementById('hiddenTicketId');
+    const ticketError = document.getElementById('ticketError');
+    const ticketSubmitButton = ticketForm?.querySelector('button[type="submit"]');
 
     ticketForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const randomCode = Math.floor(100 + Math.random() * 900);
-        const ticketNumber = `#VKI-2026-${randomCode}`;
-        if (hiddenIdInput) hiddenIdInput.value = ticketNumber;
+        if (!ticketForm.reportValidity() || ticketSubmitButton?.disabled) return;
 
-        const formData = new FormData(ticketForm);
-        try {
-            await fetch('/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: new URLSearchParams(formData).toString()
-            });
-        } catch {
-            // Yerel testte ağ hatası olursa yine onay ekranını göster
+        const randomPart = Math.random().toString(36).slice(2, 7).toUpperCase();
+        const ticketNumber = `#VKI-${new Date().getFullYear()}-${Date.now().toString(36).toUpperCase()}-${randomPart}`;
+        if (hiddenIdInput) hiddenIdInput.value = ticketNumber;
+        if (ticketError) {
+            ticketError.hidden = true;
+            ticketError.textContent = '';
         }
 
-        ticketBadge.textContent = ticketNumber;
-        ticketText.textContent = currentLang === 'tr'
-            ? `Talebiniz ${ticketNumber} takip numarasıyla oluşturuldu ve iletisim@kaanipek.net.tr adresine yönlendirildi. En kısa sürede dönüş yapılacaktır.`
-            : `Your request has been logged under ${ticketNumber} and routed to iletisim@kaanipek.net.tr. You will receive a response shortly.`;
+        const originalButtonText = ticketSubmitButton?.textContent || '';
+        if (ticketSubmitButton) {
+            ticketSubmitButton.disabled = true;
+            ticketSubmitButton.textContent = currentLang === 'tr' ? 'Gönderiliyor…' : 'Sending…';
+            ticketSubmitButton.setAttribute('aria-busy', 'true');
+        }
 
-        ticketForm.style.display = 'none';
-        successBox.style.display = 'block';
+        const formData = new FormData(ticketForm);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+        try {
+            const response = await fetch('/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams(formData).toString(),
+                signal: controller.signal
+            });
+
+            if (!response.ok) {
+                throw new Error(`Netlify Forms HTTP ${response.status}`);
+            }
+
+            ticketBadge.textContent = ticketNumber;
+            ticketText.textContent = currentLang === 'tr'
+                ? `Talebiniz web sitesi üzerinden başarıyla gönderildi. Takip numaranız: ${ticketNumber}.`
+                : `Your request was successfully submitted through the website. Your reference number is ${ticketNumber}.`;
+
+            ticketForm.style.display = 'none';
+            successBox.style.display = 'block';
+            successBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } catch (error) {
+            if (hiddenIdInput) hiddenIdInput.value = '';
+            if (ticketError) {
+                ticketError.textContent = currentLang === 'tr'
+                    ? (error.name === 'AbortError'
+                        ? 'Gönderim zaman aşımına uğradı. İnternet bağlantınızı kontrol edip tekrar deneyin.'
+                        : 'Talebiniz gönderilemedi. Lütfen bağlantınızı kontrol edip tekrar deneyin.')
+                    : (error.name === 'AbortError'
+                        ? 'The request timed out. Check your connection and try again.'
+                        : 'Your request could not be submitted. Check your connection and try again.');
+                ticketError.hidden = false;
+            }
+        } finally {
+            clearTimeout(timeoutId);
+            if (ticketSubmitButton) {
+                ticketSubmitButton.disabled = false;
+                ticketSubmitButton.textContent = originalButtonText;
+                ticketSubmitButton.removeAttribute('aria-busy');
+            }
+        }
     });
 
     document.getElementById('newTicketBtn')?.addEventListener('click', () => {
         ticketForm.reset();
+        if (ticketError) {
+            ticketError.hidden = true;
+            ticketError.textContent = '';
+        }
         successBox.style.display = 'none';
         ticketForm.style.display = 'flex';
     });
