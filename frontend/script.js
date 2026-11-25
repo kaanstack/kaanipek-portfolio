@@ -1,103 +1,106 @@
 let currentLang = 'tr';
-let cachedStories = [];
 
 async function translateToTurkish(text) {
-    if (!text) return '';
+    if (!text) return "";
+
+    const cacheKey = `vki_hn_tr_${text}`;
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) return cached;
+
     try {
-        const cleanText = text.replace(/<[^>]*>?/gm, '').slice(0, 480);
-        const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(cleanText)}&langpair=en|tr`);
-        const data = await res.json();
-        return data.responseData?.translatedText || cleanText;
-    } catch {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3500);
+
+        const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|tr&de=iletisim@kaanipek.net.tr`;
+        const response = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+            return text;
+        }
+
+        const data = await response.json();
+        const translated = data?.responseData?.translatedText || "";
+        const status = String(data?.responseStatus || "");
+        const isQuotaOrRateLimit =
+            status === "429" ||
+            /mymemory\s+warning/i.test(translated) ||
+            /used all available free translations/i.test(translated) ||
+            /next available in/i.test(translated);
+
+        if (!translated || isQuotaOrRateLimit) {
+            return text;
+        }
+
+        localStorage.setItem(cacheKey, translated);
+        return translated;
+    } catch (error) {
         return text;
     }
 }
 
-function getDomainName(url) {
+async function renderTechFeed(containerSelector, limit = 5) {
+    const container = document.querySelector(containerSelector);
+    if (!container) return;
+
     try {
-        return new URL(url).hostname.replace('www.', '');
-    } catch {
-        return 'news.ycombinator.com';
+        const topIdsRes = await fetch("https://hacker-news.firebaseio.com/v0/topstories.json");
+        if (!topIdsRes.ok) throw new Error("Hacker News topstories alınamadı");
+
+        const topIds = await topIdsRes.json();
+        const selectedIds = Array.isArray(topIds) ? topIds.slice(0, limit) : [];
+
+        container.innerHTML = "";
+
+        for (let i = 0; i < selectedIds.length; i++) {
+            try {
+                const itemRes = await fetch(`https://hacker-news.firebaseio.com/v0/item/${selectedIds[i]}.json`);
+                if (!itemRes.ok) continue;
+
+                const item = await itemRes.json();
+                if (!item || !item.title) continue;
+
+                const displayTitle = await translateToTurkish(item.title);
+                const articleUrl = item.url || `https://news.ycombinator.com/item?id=${item.id}`;
+                const hostName = (() => {
+                    try {
+                        return new URL(articleUrl).hostname.replace(/^www\./, "");
+                    } catch {
+                        return "news.ycombinator.com";
+                    }
+                })();
+
+                const card = document.createElement("article");
+                card.className = "news-card";
+                card.innerHTML = `
+                    <div>
+                        <h3 class="news-card-title">${i + 1}. ${escapeHtml(displayTitle)}</h3>
+                        <div class="news-card-meta">
+                            <span>${escapeHtml(hostName)}</span>
+                            <span>▲ ${item.score ?? 0} puan</span>
+                            <span>💬 ${item.descendants ?? 0} yorum</span>
+                        </div>
+                    </div>
+                    <a class="news-read-hint" href="${escapeHtml(articleUrl)}" target="_blank" rel="noopener noreferrer">Detayı Oku →</a>
+                `;
+
+                container.appendChild(card);
+            } catch (itemError) {
+                continue;
+            }
+        }
+    } catch (feedError) {
+        container.innerHTML = `<p class="feed-error">Gündem akışı şu an yüklenemedi.</p>`;
     }
 }
 
-async function loadTopNews() {
-    const newsList = document.getElementById('hn-news-list');
-    if (!newsList) return;
-
-    try {
-        const res = await fetch('https://hacker-news.firebaseio.com/v0/topstories.json');
-        const ids = await res.json();
-        const top5 = ids.slice(0, 5);
-
-        const rawStories = await Promise.all(
-            top5.map(id => fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`).then(r => r.json()))
-        );
-
-        cachedStories = await Promise.all(
-            rawStories.map(async (story) => {
-                const url = story.url || `https://news.ycombinator.com/item?id=${story.id}`;
-                const domain = getDomainName(url);
-                const trTitle = await translateToTurkish(story.title);
-
-                const rawText = story.text ? story.text.replace(/<[^>]*>?/gm, ' ') : '';
-                const enSummary = rawText
-                    ? rawText
-                    : `Published on ${domain} by ${story.by}. Currently trending on Hacker News with ${story.score} points and ${story.descendants || 0} community discussions.`;
-
-                const trSummary = rawText
-                    ? await translateToTurkish(rawText)
-                    : `${domain} kaynağında ${story.by} tarafından paylaşılan bu gelişme, Hacker News teknoloji topluluğunda ${story.score} puan ve ${story.descendants || 0} yorum ile öne çıkan başlıklar arasında yer alıyor.`;
-
-                return {
-                    id: story.id,
-                    author: story.by,
-                    domain,
-                    enTitle: story.title,
-                    trTitle,
-                    enSummary,
-                    trSummary,
-                    url,
-                    score: story.score,
-                    comments: story.descendants || 0
-                };
-            })
-        );
-
-        renderNews();
-    } catch {
-        newsList.innerHTML = `<div class="news-loading">${currentLang === 'tr' ? 'Haberler şu an yüklenemedi.' : 'Failed to load news.'}</div>`;
-    }
-}
-
-function renderNews() {
-    const newsList = document.getElementById('hn-news-list');
-    if (!newsList || cachedStories.length === 0) return;
-
-    newsList.innerHTML = cachedStories.map((story, idx) => {
-        const title = currentLang === 'tr' ? story.trTitle : story.enTitle;
-        const meta = currentLang === 'tr'
-            ? `${story.domain} • ▲ ${story.score} puan • 💬 ${story.comments} yorum`
-            : `${story.domain} • ▲ ${story.score} points • 💬 ${story.comments} comments`;
-        const hint = currentLang === 'tr' ? 'Detayı Oku →' : 'Read Details →';
-
-        return `
-            <article class="news-card" data-story-index="${idx}">
-                <div>
-                    <div class="news-card-title">${idx + 1}. ${title}</div>
-                    <div class="news-card-meta">${meta}</div>
-                </div>
-                <span class="news-read-hint">${hint}</span>
-            </article>
-        `;
-    }).join('');
-
-    document.querySelectorAll('.news-card').forEach(card => {
-        card.addEventListener('click', () => {
-            const index = Number(card.dataset.storyIndex);
-            openNewsModal(cachedStories[index]);
-        });
-    });
+function escapeHtml(str) {
+    return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
 }
 
 function openNewsModal(story) {
@@ -154,7 +157,6 @@ function setLanguage(lang) {
     });
 
     updateCvModalSource();
-    renderNews();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -248,5 +250,5 @@ document.addEventListener('DOMContentLoaded', () => {
         ticketForm.style.display = 'flex';
     });
 
-    loadTopNews();
+    renderTechFeed("#hn-news-list");
 });
