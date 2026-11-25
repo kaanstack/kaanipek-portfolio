@@ -211,22 +211,27 @@
             </div>
         </section>
 
-        <!-- CANLI TEKNOLOJİ GÜNDEMİ -->
+        <!-- TECH RADAR -->
         <section id="news" class="content-section">
             <div class="section-header news-section-head">
                 <div>
-                    <h2 data-tr="Günlük Teknoloji Gündemi" data-en="Daily Tech Digest">Günlük Teknoloji Gündemi</h2>
-                    <p data-tr="Hacker News üzerinden anlık çekilen en önemli 5 teknoloji haberi — detayları okumak için başlığa tıklayın"
-                       data-en="Top 5 live tech stories from Hacker News — click any headline to read details">
-                        Hacker News üzerinden anlık çekilen en önemli 5 teknoloji haberi — detayları okumak için başlığa tıklayın
-                    </p>
+                    <span class="radar-eyebrow">DAILY TECHNOLOGY BRIEFING</span>
+                    <h2>Tech Radar</h2>
+                    <p>Her gün öne çıkan 15 teknoloji gelişmesi. Haberleri kendi sitende oku, istersen orijinal kaynağa geç.</p>
                 </div>
-                <span class="live-badge" data-tr="CANLI AKIŞ" data-en="LIVE FEED">CANLI AKIŞ</span>
+                <div class="radar-head-actions">
+                    <span class="live-badge">● GÜNLÜK GÜNCELLEME</span>
+                    <button type="button" id="techRadarRefresh" class="radar-refresh-btn">↻ Yenile</button>
+                </div>
             </div>
-
-            <div id="hn-news-list" class="news-grid">
-                <div class="news-loading" data-tr="Güncel teknoloji haberleri yükleniyor..." data-en="Loading latest tech stories...">Güncel teknoloji haberleri yükleniyor...</div>
+            <div class="radar-toolbar">
+                <div id="techRadarFilters" class="tech-radar-filters" aria-label="Haber kategorileri"></div>
+                <span id="techRadarUpdated" class="radar-updated" aria-live="polite">Güncel haberler yükleniyor…</span>
             </div>
+            <div id="hn-news-list" class="news-grid" aria-live="polite">
+                <div class="news-loading">Günün teknoloji gündemi hazırlanıyor…</div>
+            </div>
+            <p class="radar-source-note">Haber verileri Hacker News üzerinden alınır. Başlık ve tartışma bilgileri kaynak gösterilerek sunulur.</p>
         </section>
 
         <!-- DEVOPS TICKET / TALEP MERKEZİ -->
