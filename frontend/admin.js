@@ -187,7 +187,10 @@
     } else if (normalizeUid(data.user?.id) !== normalizeUid(ADMIN_UID)) {
       const returnedUid = data.user?.id || "(Supabase kullanıcı ID döndürmedi)";
       await supabase.auth.signOut();
-      setMessage(loginMessage, "Yönetici ID eşleşmedi. Giriş yapan hesabın Supabase ID değeri: " + returnedUid, true);
+      const expectedUid = normalizeUid(ADMIN_UID);
+      const actualUid = normalizeUid(data.user?.id);
+      const diagnostic = "Giriş yapan ID: " + JSON.stringify(actualUid) + " (" + actualUid.length + " karakter); Kod ID: " + JSON.stringify(expectedUid) + " (" + expectedUid.length + " karakter); Eşitlik: " + String(actualUid === expectedUid) + ". Sayfayı Ctrl+Shift+R ile yenile."; 
+      setMessage(loginMessage, diagnostic, true);
     } else {
       showDashboard(true);
       await loadTickets();
