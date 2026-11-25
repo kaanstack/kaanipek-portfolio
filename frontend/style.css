@@ -1257,3 +1257,54 @@ body.light-theme {
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }
+
+
+/* Blog kapak görselleri, detay ve SEO yönetimi */
+.blog-card-cover {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: 11px;
+    margin: 0 0 1rem;
+    border: 1px solid var(--border-color);
+}
+.cover-image-preview {
+    display: block;
+    width: min(100%, 520px);
+    max-height: 240px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-top: .65rem;
+    border: 1px solid var(--border-color);
+}
+.blog-detail-cover {
+    display: block;
+    width: 100%;
+    max-height: 460px;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: 14px;
+    margin: 1rem 0 1.4rem;
+    border: 1px solid var(--border-color);
+}
+.blog-detail-content { margin-top: 1.2rem; }
+.blog-detail-content p { margin: 0 0 1rem; line-height: 1.85; color: var(--text-secondary); white-space: pre-wrap; }
+.blog-share-row {
+    display: flex; flex-wrap: wrap; align-items: center; gap: .65rem;
+    margin: 1.3rem 0; padding: .9rem 1rem;
+    border: 1px solid var(--border-color); border-radius: 10px;
+    background: var(--bg-subtle);
+}
+.blog-share-row a { color: var(--accent-cyan); overflow-wrap: anywhere; }
+.blog-share-row button {
+    border: 1px solid var(--border-color); border-radius: 8px;
+    padding: .45rem .7rem; background: var(--bg-card);
+    color: var(--text-primary); cursor: pointer;
+}
+.blog-card .read-btn { margin-top: .8rem; }
+.blog-detail h1 { line-height: 1.2; margin: .7rem 0; }
+.blog-admin-note { color: var(--text-secondary); font-size: .82rem; margin-top: .35rem; }
+@media (max-width: 600px) {
+    .blog-share-row { align-items: flex-start; flex-direction: column; }
+}
