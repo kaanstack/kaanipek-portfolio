@@ -245,6 +245,7 @@
       const summary = summaryInput.value.trim();
       const content = contentInput.value.split(/\r?\n\s*\r?\n/).map(s=>s.trim()).filter(Boolean);
       if (!title || !category || !readTime || !summary || !content.length) return setStatus("Lütfen tüm alanları doldur.",true);
+      const wasEditing = Boolean(editingId);
       const payload = {
         title, slug: slugify(title), category, read_time: readTime,
         excerpt: summary, content: content.join("\n\n"), author: "Veysel Kaan İpek"
@@ -258,7 +259,7 @@
       addButton.setAttribute("aria-expanded","false");
       resetEditor();
       await loadPosts();
-      setStatus(editingId ? "Yazı güncellendi." : "Yazı Supabase'e kaydedildi.");
+      setStatus(wasEditing ? "Yazı güncellendi." : "Yazı Supabase'e kaydedildi.");
     });
 
     copyButton?.addEventListener("click", async () => {
