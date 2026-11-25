@@ -168,17 +168,17 @@
       if (updateHistory) history.pushState({blogPost:post.slug}, "", "/blog/" + encodeURIComponent(post.slug));
       const cover = safeImageUrl(post.coverImage);
       const paragraphs = post.content.map(p => "<p>" + escape(p) + "</p>").join("");
-      detailEl.innerHTML = \`
+      detailEl.innerHTML = `
         <button type="button" id="back-to-list" class="back-btn">← Tüm Yazılara Dön</button>
-        <div class="blog-meta"><span>\${escape(post.category)}</span><span>\${escape(post.date)}</span><span>\${escape(post.readTime)}</span></div>
-        <h1>\${escape(post.title)}</h1>
-        \${cover ? '<img class="blog-detail-cover" src="' + escape(cover) + '" alt="' + escape(post.title) + '" loading="eager">' : ""}
-        <p class="blog-detail-summary">\${escape(post.summary)}</p>
+        <div class="blog-meta"><span>${escape(post.category)}</span><span>${escape(post.date)}</span><span>${escape(post.readTime)}</span></div>
+        <h1>${escape(post.title)}</h1>
+        ${cover ? '<img class="blog-detail-cover" src="' + escape(cover) + '" alt="' + escape(post.title) + '" loading="eager">' : ""}
+        <p class="blog-detail-summary">${escape(post.summary)}</p>
         <div class="blog-share-row">
-          <a href="\${escape(absolutePostUrl(post))}">\${escape(absolutePostUrl(post))}</a>
+          <a href="${escape(absolutePostUrl(post))}">${escape(absolutePostUrl(post))}</a>
           <button type="button" id="copy-post-link">Bağlantıyı Kopyala</button>
         </div>
-        <div class="blog-detail-content">\${paragraphs}</div>\`;
+        <div class="blog-detail-content">${paragraphs}</div>`;
       detailEl.classList.remove("hidden");
       listEl.classList.add("hidden");
       filtersEl?.classList.add("hidden");
@@ -205,12 +205,12 @@
         const card = document.createElement("article");
         card.className = "blog-card";
         const cover = safeImageUrl(post.coverImage);
-        card.innerHTML = \`
-          \${cover ? '<img class="blog-card-cover" src="' + escape(cover) + '" alt="' + escape(post.title) + '" loading="lazy">' : ""}
-          <div class="blog-meta"><span>\${escape(post.category)}</span><span>\${escape(post.date)}</span><span>\${escape(post.readTime)}</span></div>
-          <h3>\${escape(post.title)}</h3><p>\${escape(post.summary)}</p>
+        card.innerHTML = `
+          ${cover ? '<img class="blog-card-cover" src="' + escape(cover) + '" alt="' + escape(post.title) + '" loading="lazy">' : ""}
+          <div class="blog-meta"><span>${escape(post.category)}</span><span>${escape(post.date)}</span><span>${escape(post.readTime)}</span></div>
+          <h3>${escape(post.title)}</h3><p>${escape(post.summary)}</p>
           <button type="button" class="read-btn">Yazıyı Oku →</button>
-          \${isAdmin && post.id ? '<div class="blog-card-admin-actions"><button type="button" data-action="edit">Düzenle</button><button type="button" data-action="delete">Sil</button></div>' : ""}\`;
+          ${isAdmin && post.id ? '<div class="blog-card-admin-actions"><button type="button" data-action="edit">Düzenle</button><button type="button" data-action="delete">Sil</button></div>' : ""}`;
         card.querySelector(".read-btn").addEventListener("click", () => openPost(post));
         if (isAdmin && post.id) {
           card.querySelector('[data-action="edit"]')?.addEventListener("click", () => beginEdit(post));
