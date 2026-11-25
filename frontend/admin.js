@@ -399,6 +399,8 @@
     if (data.session?.user?.id === ADMIN_UID) {
       showDashboard(true);
       await Promise.all([loadStats(), loadTicketList(false)]);
+    } else if (data.session) {
+      await supabase.auth.signOut();
     }
   }).catch(error => setMessage(loginMessage, "Oturum kontrol edilemedi: " + error.message, true));
 })();
