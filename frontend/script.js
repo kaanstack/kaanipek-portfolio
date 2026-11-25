@@ -160,6 +160,22 @@ function setLanguage(lang) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Mobil gezinme menüsü
+    const menuToggle = document.getElementById('menuToggleBtn');
+    const primaryNav = document.getElementById('primaryNav');
+    menuToggle?.addEventListener('click', () => {
+        const isOpen = primaryNav?.classList.toggle('is-open') ?? false;
+        menuToggle.setAttribute('aria-expanded', String(isOpen));
+        menuToggle.setAttribute('aria-label', isOpen ? 'Menüyü Kapat' : 'Menüyü Aç');
+    });
+    primaryNav?.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+            primaryNav.classList.remove('is-open');
+            menuToggle?.setAttribute('aria-expanded', 'false');
+            menuToggle?.setAttribute('aria-label', 'Menüyü Aç');
+        });
+    });
+
     // Dil Seçimi
     document.querySelectorAll('.lang-btn').forEach(btn => {
         btn.addEventListener('click', () => setLanguage(btn.dataset.lang));
