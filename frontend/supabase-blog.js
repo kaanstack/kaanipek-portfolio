@@ -19,6 +19,9 @@
     const detailEl = document.getElementById("blog-detail");
     const filtersEl = document.getElementById("blog-filters");
     const headerEl = document.querySelector(".blog-header");
+    const discoveryEl = document.getElementById("blog-discovery");
+    const featuredEl = document.getElementById("blog-featured");
+    const searchInput = document.getElementById("blog-search");
     const adminMode = new URLSearchParams(location.search).get("yonetim") === "1";
     const logoutButton = document.getElementById("adminLogout");
     const addButton = document.getElementById("newPostToggle");
@@ -140,6 +143,8 @@
       listEl.classList.remove("hidden");
       filtersEl?.classList.remove("hidden");
       headerEl?.classList.remove("hidden");
+      discoveryEl?.classList.remove("hidden");
+      featuredEl?.classList.remove("hidden");
       updateSeo(null);
       window.scrollTo({top:0,behavior:"smooth"});
     }
@@ -153,6 +158,7 @@
         button.type = "button";
         button.className = "filter-btn " + (category === activeCategory ? "active" : "");
         button.textContent = category;
+        button.setAttribute("aria-pressed", String(category === activeCategory));
         button.addEventListener("click", () => {
           activeCategory = category;
           showListRoute(false);
@@ -182,6 +188,8 @@
       listEl.classList.add("hidden");
       filtersEl?.classList.add("hidden");
       headerEl?.classList.add("hidden");
+      discoveryEl?.classList.add("hidden");
+      featuredEl?.classList.add("hidden");
       updateSeo(post);
       document.getElementById("back-to-list")?.addEventListener("click", () => showListRoute(true));
       document.getElementById("copy-post-link")?.addEventListener("click", async () => {
@@ -193,23 +201,66 @@
       window.scrollTo({top:0,behavior:"smooth"});
     }
 
+    function renderFeatured(post) {
+      const featuredEl = document.getElementById("blog-featured");
+      if (!featuredEl) return;
+      const showFeatured = Boolean(post) && activeCategory === "Tümü" && !searchInput?.value.trim();
+      featuredEl.classList.toggle("hidden", !showFeatured);
+      if (!showFeatured) { featuredEl.innerHTML = ""; return; }
+      const cover = safeImageUrl(post.coverImage);
+      featuredEl.innerHTML = `
+        <article class="blog-featured-card">
+          <div class="blog-featured-copy">
+            <span class="blog-featured-kicker">ÖNE ÇIKAN YAZI</span>
+            <div class="blog-meta"><span>${escape(post.category)}</span><span>${escape(post.date)}</span><span>${escape(post.readTime)}</span></div>
+            <h2>${escape(post.title)}</h2>
+            <p>${escape(post.summary)}</p>
+            <button type="button" class="blog-featured-link">Yazıyı keşfet <span aria-hidden="true">↗</span></button>
+          </div>
+          <div class="blog-featured-art ${cover ? "has-cover" : ""}">
+            ${cover ? '<img src="' + escape(cover) + '" alt="' + escape(post.title) + '" loading="eager">' : '<div class="blog-art-mark" aria-hidden="true">VKI<span> / NOTES</span></div>'}
+            <span class="blog-art-index">FIELD NOTES / 01</span>
+          </div>
+        </article>`;
+      featuredEl.querySelector(".blog-featured-link")?.addEventListener("click", () => openPost(post));
+    }
+
+    searchInput?.addEventListener("input", renderList);
+
     function renderList() {
-      const filtered = activeCategory === "Tümü" ? posts : posts.filter(p => p.category === activeCategory);
+      const query = (searchInput?.value || "").trim().toLocaleLowerCase("tr-TR");
+      const categoryPosts = activeCategory === "Tümü" ? posts : posts.filter(p => p.category === activeCategory);
+      const featuredPost = categoryPosts[0] || null;
+      renderFeatured(featuredPost);
+      const filtered = categoryPosts.filter((p, index) => {
+        if (!query && activeCategory === "Tümü" && index === 0) return false;
+        const haystack = [p.title, p.summary, p.category, p.content.join(" ")].join(" ").toLocaleLowerCase("tr-TR");
+        return !query || haystack.includes(query);
+      });
+      const countEl = document.getElementById("blog-post-count");
+      if (countEl) countEl.textContent = query || activeCategory !== "Tümü"
+        ? filtered.length + " yazı bulundu"
+        : posts.length + " yazı";
       listEl.innerHTML = "";
       if (!filtered.length) {
-        listEl.innerHTML = "<p>Bu kategoride henüz yazı yok.</p>";
+        listEl.innerHTML = '<div class="blog-empty-state"><span>⌕</span><h3>Aradığını bulamadık.</h3><p>Başka bir kelime deneyebilir veya kategori seçimini değiştirebilirsin.</p></div>';
         return;
       }
-      filtered.forEach(post => {
+      filtered.forEach((post, index) => {
         const card = document.createElement("article");
         card.className = "blog-card";
         const cover = safeImageUrl(post.coverImage);
         card.innerHTML = `
-          ${cover ? '<img class="blog-card-cover" src="' + escape(cover) + '" alt="' + escape(post.title) + '" loading="lazy">' : ""}
-          <div class="blog-meta"><span>${escape(post.category)}</span><span>${escape(post.date)}</span><span>${escape(post.readTime)}</span></div>
-          <h3>${escape(post.title)}</h3><p>${escape(post.summary)}</p>
-          <button type="button" class="read-btn">Yazıyı Oku →</button>
-          ${isAdmin && post.id ? '<div class="blog-card-admin-actions"><button type="button" data-action="edit">Düzenle</button><button type="button" data-action="delete">Sil</button></div>' : ""}`;
+          <div class="blog-card-media ${cover ? "has-cover" : ""}">
+            ${cover ? '<img class="blog-card-cover" src="' + escape(cover) + '" alt="' + escape(post.title) + '" loading="lazy">' : '<span class="blog-card-placeholder" aria-hidden="true">VKI<span> / NOTES</span></span>'}
+            <span class="blog-card-number">${String(index + 1).padStart(2,"0")}</span>
+          </div>
+          <div class="blog-card-body">
+            <div class="blog-meta"><span>${escape(post.category)}</span><span>${escape(post.date)}</span><span>${escape(post.readTime)}</span></div>
+            <h3>${escape(post.title)}</h3><p>${escape(post.summary)}</p>
+            <button type="button" class="read-btn">Yazıyı oku <span aria-hidden="true">↗</span></button>
+            ${isAdmin && post.id ? '<div class="blog-card-admin-actions"><button type="button" data-action="edit">Düzenle</button><button type="button" data-action="delete">Sil</button></div>' : ""}
+          </div>`;
         card.querySelector(".read-btn").addEventListener("click", () => openPost(post));
         if (isAdmin && post.id) {
           card.querySelector('[data-action="edit"]')?.addEventListener("click", () => beginEdit(post));
