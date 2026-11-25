@@ -39,58 +39,142 @@ async function translateToTurkish(text) {
     }
 }
 
-async function renderTechFeed(containerSelector, limit = 5) {
+const TECH_RADAR_CACHE_KEY = "vki_tech_radar_cache_v1";
+const TECH_RADAR_CACHE_TTL = 24 * 60 * 60 * 1000;
+const TECH_RADAR_CATEGORIES = ["Tümü", "Yapay Zekâ", "Yazılım", "Siber Güvenlik", "Donanım", "Bulut & DevOps", "Diğer"];
+
+function classifyTechStory(item) {
+    const text = `${item.title || ""} ${item.text || ""} ${item.url || ""}`.toLowerCase();
+    if (/openai|chatgpt|claude|anthropic|gemini|llm|artificial intelligence|\bai\b|machine learning|deep learning|neural| yapay zek/.test(text)) return "Yapay Zekâ";
+    if (/security|cyber|vulnerability|zero.day|malware|ransomware|exploit|cve-|siber güvenlik/.test(text)) return "Siber Güvenlik";
+    if (/gpu|cpu|processor|chip|semiconductor|nvidia|amd|intel|arm |hardware|donanım/.test(text)) return "Donanım";
+    if (/aws|azure|google cloud|kubernetes|docker|devops|cloud|serverless|infrastructure|linux/.test(text)) return "Bulut & DevOps";
+    if (/github|gitlab|programming|developer|javascript|python|rust|linux|database|framework|software|open.source| yazılım/.test(text)) return "Yazılım";
+    return "Diğer";
+}
+
+function getTechRadarCache() {
+    try {
+        const value = JSON.parse(localStorage.getItem(TECH_RADAR_CACHE_KEY) || "null");
+        return value && Array.isArray(value.stories) ? value : null;
+    } catch { return null; }
+}
+
+async function fetchTechRadarStories(force = false) {
+    const cached = getTechRadarCache();
+    if (!force && cached && Date.now() - cached.fetchedAt < TECH_RADAR_CACHE_TTL) return cached;
+
+    const response = await fetch("https://hacker-news.firebaseio.com/v0/topstories.json");
+    if (!response.ok) throw new Error("Haber listesi alınamadı.");
+    const ids = (await response.json()).slice(0, 45);
+    const items = await Promise.all(ids.map(async (id) => {
+        try {
+            const result = await fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`);
+            if (!result.ok) return null;
+            const item = await result.json();
+            if (!item || item.deleted || item.dead || !item.title || item.type !== "story") return null;
+            return item;
+        } catch { return null; }
+    }));
+
+    const stories = items.filter(Boolean).slice(0, 15).map((item) => ({
+        id: item.id,
+        title: item.title,
+        displayTitle: item.title,
+        url: item.url || `https://news.ycombinator.com/item?id=${item.id}`,
+        domain: (() => { try { return new URL(item.url).hostname.replace(/^www\./, ""); } catch { return "news.ycombinator.com"; } })(),
+        author: item.by || "Hacker News",
+        score: item.score || 0,
+        comments: item.descendants || 0,
+        time: item.time || Math.floor(Date.now() / 1000),
+        text: item.text || "",
+        category: classifyTechStory(item)
+    }));
+
+    // Başlık çevirisi başarısız olursa orijinal başlık korunur.
+    await Promise.all(stories.map(async (story) => {
+        try { story.displayTitle = await translateToTurkish(story.title); } catch { /* fallback title */ }
+    }));
+
+    const value = { fetchedAt: Date.now(), stories };
+    try { localStorage.setItem(TECH_RADAR_CACHE_KEY, JSON.stringify(value)); } catch { /* storage may be unavailable */ }
+    return value;
+}
+
+function renderTechRadarStories(container, stories, activeCategory = "Tümü") {
+    const visible = activeCategory === "Tümü" ? stories : stories.filter((story) => story.category === activeCategory);
+    container.innerHTML = "";
+    if (!visible.length) {
+        container.innerHTML = '<p class="news-loading">Bu kategoride şu an haber bulunamadı.</p>';
+        return;
+    }
+    visible.forEach((story, index) => {
+        const card = document.createElement("article");
+        card.className = "news-card";
+        card.innerHTML = `
+            <div class="news-card-main">
+                <div class="news-card-topline">
+                    <span class="news-category">${escapeHtml(story.category)}</span>
+                    <span class="news-card-domain">${escapeHtml(story.domain)}</span>
+                </div>
+                <h3 class="news-card-title">${index + 1}. ${escapeHtml(story.displayTitle || story.title)}</h3>
+                <div class="news-card-meta">
+                    <span>▲ ${story.score} puan</span>
+                    <span>💬 ${story.comments} yorum</span>
+                    <span>${new Date(story.time * 1000).toLocaleDateString("tr-TR")}</span>
+                </div>
+            </div>
+            <a class="news-read-hint" href="news.html?id=${encodeURIComponent(story.id)}">Detayları Oku <span aria-hidden="true">→</span></a>
+        `;
+        container.appendChild(card);
+    });
+}
+
+async function renderTechFeed(containerSelector, forceRefresh = false) {
     const container = document.querySelector(containerSelector);
     if (!container) return;
+    const filters = document.getElementById("techRadarFilters");
+    const updated = document.getElementById("techRadarUpdated");
+    const refreshButton = document.getElementById("techRadarRefresh");
+    let activeCategory = "Tümü";
+    if (refreshButton) refreshButton.disabled = true;
 
     try {
-        const topIdsRes = await fetch("https://hacker-news.firebaseio.com/v0/topstories.json");
-        if (!topIdsRes.ok) throw new Error("Hacker News topstories alınamadı");
-
-        const topIds = await topIdsRes.json();
-        const selectedIds = Array.isArray(topIds) ? topIds.slice(0, limit) : [];
-
-        container.innerHTML = "";
-
-        for (let i = 0; i < selectedIds.length; i++) {
-            try {
-                const itemRes = await fetch(`https://hacker-news.firebaseio.com/v0/item/${selectedIds[i]}.json`);
-                if (!itemRes.ok) continue;
-
-                const item = await itemRes.json();
-                if (!item || !item.title) continue;
-
-                const displayTitle = await translateToTurkish(item.title);
-                const articleUrl = item.url || `https://news.ycombinator.com/item?id=${item.id}`;
-                const hostName = (() => {
-                    try {
-                        return new URL(articleUrl).hostname.replace(/^www\./, "");
-                    } catch {
-                        return "news.ycombinator.com";
-                    }
-                })();
-
-                const card = document.createElement("article");
-                card.className = "news-card";
-                card.innerHTML = `
-                    <div>
-                        <h3 class="news-card-title">${i + 1}. ${escapeHtml(displayTitle)}</h3>
-                        <div class="news-card-meta">
-                            <span>${escapeHtml(hostName)}</span>
-                            <span>▲ ${item.score ?? 0} puan</span>
-                            <span>💬 ${item.descendants ?? 0} yorum</span>
-                        </div>
-                    </div>
-                    <a class="news-read-hint" href="${escapeHtml(articleUrl)}" target="_blank" rel="noopener noreferrer">Detayı Oku →</a>
-                `;
-
-                container.appendChild(card);
-            } catch (itemError) {
-                continue;
-            }
+        const cache = await fetchTechRadarStories(forceRefresh);
+        const stories = cache.stories;
+        if (filters) {
+            filters.innerHTML = "";
+            TECH_RADAR_CATEGORIES.forEach((category) => {
+                const count = category === "Tümü" ? stories.length : stories.filter((story) => story.category === category).length;
+                if (category !== "Tümü" && count === 0) return;
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = `tech-filter-btn${category === activeCategory ? " active" : ""}`;
+                button.textContent = category;
+                button.addEventListener("click", () => {
+                    activeCategory = category;
+                    filters.querySelectorAll("button").forEach((node) => node.classList.toggle("active", node === button));
+                    renderTechRadarStories(container, stories, activeCategory);
+                });
+                filters.appendChild(button);
+            });
         }
-    } catch (feedError) {
-        container.innerHTML = `<p class="feed-error">Gündem akışı şu an yüklenemedi.</p>`;
+        renderTechRadarStories(container, stories, activeCategory);
+        if (updated) {
+            const date = new Date(cache.fetchedAt);
+            updated.textContent = `Son güncelleme: ${date.toLocaleString("tr-TR", { dateStyle: "medium", timeStyle: "short" })}`;
+        }
+    } catch (error) {
+        console.error("Tech Radar yüklenemedi:", error);
+        const cached = getTechRadarCache();
+        if (cached?.stories?.length) {
+            renderTechRadarStories(container, cached.stories);
+            if (updated) updated.textContent = "Çevrimdışı önbellek gösteriliyor.";
+        } else {
+            container.innerHTML = '<p class="news-loading">Haberler şu anda yüklenemedi. Lütfen biraz sonra tekrar deneyin.</p>';
+        }
+    } finally {
+        if (refreshButton) refreshButton.disabled = false;
     }
 }
 
@@ -404,6 +488,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     renderTechFeed("#hn-news-list");
+    document.getElementById("techRadarRefresh")?.addEventListener("click", () => renderTechFeed("#hn-news-list", true));
 });
 
 async function initBlogPage() {
