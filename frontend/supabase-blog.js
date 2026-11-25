@@ -3,8 +3,8 @@
 
   // Supabase Dashboard > Project Settings > API: use Project URL + publishable/anon key.
   // Never place a service_role or secret key in browser code.
-  const SUPABASE_URL = "YOUR_SUPABASE_PROJECT_URL";
-  const SUPABASE_ANON_KEY = "YOUR_SUPABASE_PUBLISHABLE_OR_ANON_KEY";
+  const SUPABASE_URL = "https://dkhkvpspgniygdqgwtyh.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_MPa3mW5WwmD3eVt_PI2X2Q_tqVCYhmd";
   const ADMIN_UID = "03347b3f-833f-4ff0-97d0-2dd1e4348b3f";
 
   document.addEventListener("DOMContentLoaded", initSupabaseBlog);
