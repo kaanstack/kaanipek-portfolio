@@ -3,7 +3,7 @@
 
   const SUPABASE_URL = "https://dkhkvpspgniygdqgwtyh.supabase.co";
   const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_MPa3mW5WwmD3eVt_PI2X2Q_tqVCYhmd";
-  const ADMIN_UID = "03347b3f-833f-4ff0-97d2-2dd1e4348b3f";
+  const ADMIN_UID = "03347b3f-833f-4ff0-97d0-2dd1e4348b3f";
   const normalizeUid = (value) => String(value || "").trim().toLowerCase();
   const STATUS_LABELS = {
     received: "Talep alındı",
