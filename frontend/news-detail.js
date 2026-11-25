@@ -38,13 +38,28 @@
     return node;
   };
 
+  // Reject obvious profanity accidentally introduced by low-quality machine translations.
+  // Normalize punctuation/diacritics so variants such as "s*ktir" are caught too.
+  function hasUnsafeTranslation(value) {
+    const normalized = safeText(value).toLocaleLowerCase("tr-TR")
+      .normalize("NFD").replace(/[\\u0300-\\u036f]/g, "")
+      .replace(/ı/g, "i");
+    const compact = normalized.replace(/[^a-z0-9]+/g, " ").trim();
+    const blockedWords = new Set([
+      "siktir", "siktirgit", "siktirgitmek", "sikerim", "sikiyorum", "siktim",
+      "hasiktir", "hasiktir", "amk", "aq", "orospu", "pic", "yarrak", "gotveren"
+    ]);
+    return compact.split(/\\s+/).some((word) => blockedWords.has(word));
+  }
+
   async function translateToTurkish(value) {
     const original = safeText(value);
     if (!original || !/[a-zA-Z]/.test(original)) return original;
     const cacheKey = TRANSLATION_PREFIX + original;
     try {
       const cached = localStorage.getItem(cacheKey);
-      if (cached) return cached;
+      if (cached && !hasUnsafeTranslation(cached)) return cached;
+      if (cached) localStorage.removeItem(cacheKey);
     } catch {}
 
     try {
@@ -59,6 +74,7 @@
       const translated = safeText(data?.responseData?.translatedText || "");
       const status = String(data?.responseStatus || "");
       if (!translated || status !== "200" || /used all available free translations|mymemory warning|next available in/i.test(translated)) return original;
+      if (hasUnsafeTranslation(translated)) return original;
       try { localStorage.setItem(cacheKey, translated); } catch {}
       return translated;
     } catch {
