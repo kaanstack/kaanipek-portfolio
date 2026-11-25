@@ -119,7 +119,11 @@
       setMeta("twitter:card", post.coverImage ? "summary_large_image" : "summary", "name");
       setMeta("twitter:title", post.title, "name");
       setMeta("twitter:description", description, "name");
-      if (post.coverImage) setMeta("twitter:image", safeImageUrl(post.coverImage), "name");
+      if (post.coverImage) {
+        setMeta("twitter:image", safeImageUrl(post.coverImage), "name");
+      } else {
+        document.head.querySelector('meta[name="twitter:image"]')?.remove();
+      }
       setCanonical(absolutePostUrl(post));
     }
     const updateAdminUI = () => {
@@ -267,7 +271,7 @@
     }
 
     async function uploadCover(file) {
-      if (!file) return editingPost?.coverImage || "";
+      if (!file) return editingPost?.coverImage || null;
       if (!ALLOWED_IMAGE_TYPES.includes(file.type)) throw new Error("Yalnızca JPG, PNG, WebP veya AVIF görsel yükleyebilirsin.");
       if (file.size > MAX_IMAGE_SIZE) throw new Error("Kapak görseli 5 MB sınırını aşamaz.");
       const extension = ({ "image/jpeg":"jpg", "image/png":"png", "image/webp":"webp", "image/avif":"avif" })[file.type];
@@ -398,7 +402,7 @@
         const payload = {
           title, slug: slugify(title), category, read_time: readTime,
           excerpt: summary, content: content.join("\n\n"),
-          author: "Veysel Kaan İpek", cover_image: coverImage,
+          author: "Veysel Kaan İpek", cover_image: coverImage || null,
           meta_description: metaDescription
         };
         const query = editingId
