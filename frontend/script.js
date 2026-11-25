@@ -102,14 +102,16 @@ async function fetchTechRadarStories(force = false) {
     return value;
 }
 
-function renderTechRadarStories(container, stories, activeCategory = "Tümü") {
+function renderTechRadarStories(container, stories, activeCategory = "Tümü", visibleLimit = 5) {
     const visible = activeCategory === "Tümü" ? stories : stories.filter((story) => story.category === activeCategory);
+    const loadMoreButton = document.getElementById("techRadarLoadMore");
     container.innerHTML = "";
     if (!visible.length) {
         container.innerHTML = '<p class="news-loading">Bu kategoride şu an haber bulunamadı.</p>';
+        if (loadMoreButton) loadMoreButton.hidden = true;
         return;
     }
-    visible.forEach((story, index) => {
+    visible.slice(0, visibleLimit).forEach((story, index) => {
         const card = document.createElement("article");
         card.className = "news-card";
         card.innerHTML = `
@@ -129,6 +131,11 @@ function renderTechRadarStories(container, stories, activeCategory = "Tümü") {
         `;
         container.appendChild(card);
     });
+    if (loadMoreButton) {
+        const remaining = Math.max(0, visible.length - visibleLimit);
+        loadMoreButton.hidden = remaining === 0;
+        loadMoreButton.textContent = remaining > 0 ? `Daha fazla haber göster · ${remaining} kaldı` : "";
+    }
 }
 
 async function renderTechFeed(containerSelector, forceRefresh = false) {
@@ -138,11 +145,21 @@ async function renderTechFeed(containerSelector, forceRefresh = false) {
     const updated = document.getElementById("techRadarUpdated");
     const refreshButton = document.getElementById("techRadarRefresh");
     let activeCategory = "Tümü";
+    let visibleLimit = 5;
+    const loadMoreButton = document.getElementById("techRadarLoadMore");
+    if (loadMoreButton) {
+        loadMoreButton.onclick = () => {
+            visibleLimit += 5;
+            renderTechRadarStories(container, currentStories, activeCategory, visibleLimit);
+        };
+    }
+    let currentStories = [];
     if (refreshButton) refreshButton.disabled = true;
 
     try {
         const cache = await fetchTechRadarStories(forceRefresh);
         const stories = cache.stories;
+        currentStories = stories;
         if (filters) {
             filters.innerHTML = "";
             TECH_RADAR_CATEGORIES.forEach((category) => {
@@ -154,13 +171,14 @@ async function renderTechFeed(containerSelector, forceRefresh = false) {
                 button.textContent = category;
                 button.addEventListener("click", () => {
                     activeCategory = category;
+                    visibleLimit = 5;
                     filters.querySelectorAll("button").forEach((node) => node.classList.toggle("active", node === button));
-                    renderTechRadarStories(container, stories, activeCategory);
+                    renderTechRadarStories(container, stories, activeCategory, visibleLimit);
                 });
                 filters.appendChild(button);
             });
         }
-        renderTechRadarStories(container, stories, activeCategory);
+        renderTechRadarStories(container, stories, activeCategory, visibleLimit);
         if (updated) {
             const date = new Date(cache.fetchedAt);
             updated.textContent = `Son güncelleme: ${date.toLocaleString("tr-TR", { dateStyle: "medium", timeStyle: "short" })}`;
@@ -169,7 +187,8 @@ async function renderTechFeed(containerSelector, forceRefresh = false) {
         console.error("Tech Radar yüklenemedi:", error);
         const cached = getTechRadarCache();
         if (cached?.stories?.length) {
-            renderTechRadarStories(container, cached.stories);
+            currentStories = cached.stories;
+            renderTechRadarStories(container, cached.stories, "Tümü", visibleLimit);
             if (updated) updated.textContent = "Çevrimdışı önbellek gösteriliyor.";
         } else {
             container.innerHTML = '<p class="news-loading">Haberler şu anda yüklenemedi. Lütfen biraz sonra tekrar deneyin.</p>';
