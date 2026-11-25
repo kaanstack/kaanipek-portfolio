@@ -33,7 +33,6 @@
     const contentInput = document.getElementById("postContent");
 
     let supabaseClient = null;
-    let basePosts = [];
     let databasePosts = [];
     let posts = [];
     let activeCategory = "Tümü";
@@ -57,13 +56,9 @@
       summary: p.summary || p.excerpt || "",
       content: Array.isArray(p.content) ? p.content : String(p.content || "").split(/\n\s*\n/).filter(Boolean)
     });
-    const merge = (...groups) => {
-      const map = new Map();
-      groups.flat().map(normalize).forEach(p => {
-        if (p.slug) map.set(p.slug, { ...(map.get(p.slug) || {}), ...p });
-      });
-      return [...map.values()].sort((a,b) => String(b.date).localeCompare(String(a.date)));
-    };
+    const sortPosts = (items) => items
+      .map(normalize)
+      .sort((a,b) => String(b.date).localeCompare(String(a.date)));
     const updateAdminUI = () => {
       [addButton, copyButton, logoutButton].forEach(el => el?.classList.toggle("hidden", !isAdmin));
       loginToggle?.classList.toggle("hidden", isAdmin);
@@ -160,17 +155,11 @@
     }
 
     async function loadPosts() {
-      const jsonResponse = await fetch("posts.json");
-      if (jsonResponse.ok) {
-        const json = await jsonResponse.json();
-        if (Array.isArray(json)) basePosts = json;
-      }
-      if (supabaseClient) {
-        const {data,error} = await supabaseClient.from("posts").select("*").order("created_at",{ascending:false});
-        if (error) throw error;
-        databasePosts = (data || []).map(normalize);
-      }
-      posts = merge(basePosts, databasePosts);
+      if (!supabaseClient) throw new Error("Supabase bağlantısı hazır değil.");
+      const {data,error} = await supabaseClient.from("posts").select("*").order("created_at",{ascending:false});
+      if (error) throw error;
+      databasePosts = data || [];
+      posts = sortPosts(databasePosts);
       renderFilters();
       renderList();
     }
@@ -180,7 +169,7 @@
       const {error} = await supabaseClient.from("posts").delete().eq("id",post.id);
       if (error) { setStatus("Yazı silinemedi: " + error.message,true); return; }
       databasePosts = databasePosts.filter(p => p.id !== post.id);
-      posts = merge(basePosts,databasePosts);
+      posts = sortPosts(databasePosts);
       renderFilters(); renderList();
       setStatus("Yazı Supabase veritabanından silindi.");
     }
@@ -282,24 +271,12 @@
         if (isAdmin) setStatus("Yönetici oturumu açık.");
       } catch (error) {
         setStatus("Supabase bağlantısı kurulamadı: " + error.message,true);
-        try {
-          const response = await fetch("posts.json");
-          basePosts = await response.json();
-          posts = merge(basePosts);
-          renderFilters(); renderList();
-        } catch { listEl.innerHTML = "<p>Blog yazıları şu anda yüklenemedi.</p>"; }
+        listEl.innerHTML = "<p>Blog yazıları şu anda yüklenemedi. Lütfen daha sonra tekrar deneyin.</p>";
       }
     } else {
       updateAdminUI();
-      try {
-        const response = await fetch("posts.json");
-        basePosts = await response.json();
-        posts = merge(basePosts);
-        renderFilters(); renderList();
-        setStatus("Supabase bağlantı bilgileri henüz eklenmedi. Şu an yerel blog yazıları gösteriliyor.");
-      } catch {
-        setStatus("Supabase bağlantı bilgileri eksik ve posts.json yüklenemedi.",true);
-      }
+      listEl.innerHTML = "<p>Blog servisi şu anda kullanılamıyor.</p>";
+      setStatus("Supabase bağlantısı kurulamadı. Lütfen daha sonra tekrar deneyin.",true);
     }
   }
 })();
