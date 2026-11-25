@@ -46,3 +46,33 @@
  .admin-nav-actions .btn { padding:.5rem .65rem; font-size:.78rem; }
  .admin-login { padding:1.25rem; }
 }
+
+
+/* Keep native form controls readable in the dark admin interface. */
+.admin-form input,
+.admin-toolbar input,
+.admin-toolbar select,
+.ticket-status-select {
+  color-scheme: dark;
+  background-color: #0d1422;
+  color: #e8eef8;
+}
+
+.admin-toolbar select option,
+.ticket-status-select option {
+  background-color: #111827;
+  color: #e8eef8;
+}
+
+.admin-form input:focus,
+.admin-toolbar input:focus,
+.admin-toolbar select:focus,
+.ticket-status-select:focus {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
+.admin-toolbar input::placeholder {
+  color: #8793a6;
+  opacity: 1;
+}
