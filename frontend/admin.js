@@ -185,13 +185,8 @@
     if (error) {
       setMessage(loginMessage, "Giriş başarısız. E-posta veya şifreni kontrol et.", true);
     } else if (normalizeUid(data.user?.id) !== normalizeUid(ADMIN_UID)) {
-      const returnedUid = data.user?.id || "(Supabase kullanıcı ID döndürmedi)";
       await supabase.auth.signOut();
-      const expectedUid = normalizeUid(ADMIN_UID);
-      const actualUid = normalizeUid(data.user?.id);
-      const toCodes = (value) => Array.from(value, char => char.codePointAt(0).toString(16)).join(" ");
-      const diagnostic = "Giriş ID kodları: " + toCodes(actualUid) + " | Kod ID kodları: " + toCodes(expectedUid) + " | Eşitlik: " + String(actualUid === expectedUid) + ". Build: admin-uuid-debug-3."; 
-      setMessage(loginMessage, diagnostic, true);
+      setMessage(loginMessage, "Bu hesap yönetici olarak yetkili değil. Yönetici hesabının doğru projeye bağlı olduğunu kontrol et.", true);
     } else {
       showDashboard(true);
       await loadTickets();
