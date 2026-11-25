@@ -525,4 +525,4 @@ async function initBlogPage() {
   updateCustomCategory();
 }
 
-document.addEventListener("DOMContentLoaded", initBlogPage);
+if (!window.__vkiSupabaseBlog) document.addEventListener("DOMContentLoaded", initBlogPage);
