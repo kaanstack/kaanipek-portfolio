@@ -22,7 +22,7 @@ create table if not exists public.site_versions (
   is_current boolean not null default false,
   created_at timestamptz not null default now(),
   constraint site_versions_commit_url_check check (
-    commit_url is null or commit_url ~ '^https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/commit/[A-Fa-f0-9]+(\?.*)?$'
+    commit_url is null or commit_url ~ '^https://github[.]com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/commit/[A-Fa-f0-9]+(\?.*)?$'
   )
 );
 
