@@ -4,6 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Blog — Veysel Kaan İpek</title>
+  <meta name="description" content="Altyapı, yazılım geliştirme ve mühendislik üzerine teknik notlar." />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="Veysel Kaan İpek" />
+  <meta property="og:title" content="Blog — Veysel Kaan İpek" />
+  <meta property="og:description" content="Altyapı, yazılım geliştirme ve mühendislik üzerine teknik notlar." />
+  <meta property="og:url" content="https://kaanipek.net.tr/blog.html" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="canonical" href="https://kaanipek.net.tr/blog.html" />
   <link rel="stylesheet" href="style.css" />
   <style>
 /* Supabase blog admin */
@@ -100,6 +108,16 @@
           <div class="form-group">
             <label for="postReadTime">Okuma Süresi</label>
             <input id="postReadTime" name="readTime" type="text" required maxlength="40" placeholder="Örn: 5 dk">
+          </div>
+          <div class="form-group blog-form-wide">
+            <label for="coverImageFile">Kapak Görseli (JPG, PNG, WebP veya AVIF · en fazla 5 MB)</label>
+            <input id="coverImageFile" type="file" accept="image/jpeg,image/png,image/webp,image/avif">
+            <img id="coverImagePreview" class="cover-image-preview hidden" alt="Kapak görseli önizlemesi">
+            <p class="blog-admin-note">Görsel seçmezsen mevcut kapak korunur. Yeni yazıda kapak görseli isteğe bağlıdır.</p>
+          </div>
+          <div class="form-group blog-form-wide">
+            <label for="metaDescription">SEO Açıklaması (önerilen: 150–160 karakter)</label>
+            <textarea id="metaDescription" name="metaDescription" rows="2" maxlength="320" placeholder="Arama motorlarında görünebilecek kısa açıklama"></textarea>
           </div>
           <div class="form-group blog-form-wide">
             <label for="postSummary">Özet</label>
