@@ -227,7 +227,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // DevOps Ticket Form Gönderimi (Netlify Forms AJAX)
+    // Ticket submission and public status lookup (Supabase RPC)
+    const SUPABASE_URL = "https://dkhkvpspgniygdqgwtyh.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_MPa3mW5WwmD3eVt_PI2X2Q_tqVCYhmd";
     const ticketForm = document.getElementById('ticketForm');
     const successBox = document.getElementById('ticketSuccessBox');
     const ticketBadge = document.getElementById('generatedTicketBadge');
@@ -235,19 +237,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const hiddenIdInput = document.getElementById('hiddenTicketId');
     const ticketError = document.getElementById('ticketError');
     const ticketSubmitButton = ticketForm?.querySelector('button[type="submit"]');
+    const supabaseHeaders = {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json'
+    };
 
     ticketForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!ticketForm.reportValidity() || ticketSubmitButton?.disabled) return;
 
-        const randomPart = Math.random().toString(36).slice(2, 7).toUpperCase();
-        const ticketNumber = `#VKI-${new Date().getFullYear()}-${Date.now().toString(36).toUpperCase()}-${randomPart}`;
-        if (hiddenIdInput) hiddenIdInput.value = ticketNumber;
         if (ticketError) {
             ticketError.hidden = true;
             ticketError.textContent = '';
         }
-
         const originalButtonText = ticketSubmitButton?.textContent || '';
         if (ticketSubmitButton) {
             ticketSubmitButton.disabled = true;
@@ -260,35 +263,60 @@ document.addEventListener('DOMContentLoaded', () => {
         const timeoutId = setTimeout(() => controller.abort(), 15000);
 
         try {
-            const response = await fetch('/', {
+            const createResponse = await fetch(`${SUPABASE_URL}/rest/v1/rpc/create_ticket`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: new URLSearchParams(formData).toString(),
+                headers: supabaseHeaders,
+                body: JSON.stringify({
+                    p_name: formData.get('name'),
+                    p_email: formData.get('email'),
+                    p_category: formData.get('category'),
+                    p_priority: formData.get('priority'),
+                    p_message: formData.get('message')
+                }),
                 signal: controller.signal
             });
-
-            if (!response.ok) {
-                throw new Error(`Netlify Forms HTTP ${response.status}`);
+            if (!createResponse.ok) {
+                const details = await createResponse.text();
+                throw new Error(`Ticket API HTTP ${createResponse.status}: ${details}`);
             }
 
-            ticketBadge.textContent = ticketNumber;
+            const created = await createResponse.json();
+            const ticketNumber = created?.ticket_number;
+            if (!ticketNumber) throw new Error('Ticket API returned no reference number.');
+
+            if (hiddenIdInput) hiddenIdInput.value = `#${ticketNumber}`;
+            formData.set('ticket-id', `#${ticketNumber}`);
+
+            // Keep Netlify Forms as a secondary inbox; Supabase is the source of truth.
+            try {
+                await fetch('/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams(formData).toString()
+                });
+            } catch (backupError) {
+                console.warn('Netlify backup submission failed; ticket is safely stored in Supabase.', backupError);
+            }
+
+            ticketBadge.textContent = `#${ticketNumber}`;
             ticketText.textContent = currentLang === 'tr'
-                ? `Talebiniz web sitesi üzerinden başarıyla gönderildi. Takip numaranız: ${ticketNumber}.`
-                : `Your request was successfully submitted through the website. Your reference number is ${ticketNumber}.`;
+                ? `Talebiniz başarıyla kaydedildi. Takip numaranız: #${ticketNumber}. Bu numarayı saklayın.`
+                : `Your request has been saved. Your reference number is #${ticketNumber}. Please keep it safe.`;
 
             ticketForm.style.display = 'none';
             successBox.style.display = 'block';
             successBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         } catch (error) {
+            console.error('Ticket submission failed:', error);
             if (hiddenIdInput) hiddenIdInput.value = '';
             if (ticketError) {
                 ticketError.textContent = currentLang === 'tr'
                     ? (error.name === 'AbortError'
-                        ? 'Gönderim zaman aşımına uğradı. İnternet bağlantınızı kontrol edip tekrar deneyin.'
-                        : 'Talebiniz gönderilemedi. Lütfen bağlantınızı kontrol edip tekrar deneyin.')
+                        ? 'Gönderim zaman aşımına uğradı. Lütfen tekrar deneyin.'
+                        : 'Talep kaydedilemedi. Lütfen biraz sonra tekrar deneyin.')
                     : (error.name === 'AbortError'
-                        ? 'The request timed out. Check your connection and try again.'
-                        : 'Your request could not be submitted. Check your connection and try again.');
+                        ? 'The request timed out. Please try again.'
+                        : 'The request could not be saved. Please try again shortly.');
                 ticketError.hidden = false;
             }
         } finally {
@@ -309,6 +337,70 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         successBox.style.display = 'none';
         ticketForm.style.display = 'flex';
+    });
+
+    const lookupForm = document.getElementById('ticketLookupForm');
+    const lookupInput = document.getElementById('ticketLookupNumber');
+    const lookupError = document.getElementById('ticketLookupError');
+    const lookupResult = document.getElementById('ticketLookupResult');
+    const ticketStatusLabels = {
+        received: currentLang === 'tr' ? 'Talep alındı' : 'Request received',
+        in_progress: currentLang === 'tr' ? 'İnceleniyor' : 'In progress',
+        resolved: currentLang === 'tr' ? 'Çözüldü' : 'Resolved',
+        closed: currentLang === 'tr' ? 'Kapatıldı' : 'Closed'
+    };
+
+    lookupForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!lookupForm.reportValidity()) return;
+        lookupError.hidden = true;
+        lookupResult.hidden = true;
+        lookupResult.textContent = '';
+        const button = lookupForm.querySelector('button[type="submit"]');
+        const oldText = button.textContent;
+        button.disabled = true;
+        button.textContent = currentLang === 'tr' ? 'Sorgulanıyor…' : 'Checking…';
+
+        try {
+            const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_ticket_status`, {
+                method: 'POST',
+                headers: supabaseHeaders,
+                body: JSON.stringify({ p_ticket_number: lookupInput.value.trim() })
+            });
+            if (!response.ok) throw new Error(`Ticket lookup HTTP ${response.status}`);
+            const rows = await response.json();
+            const ticket = Array.isArray(rows) ? rows[0] : null;
+            if (!ticket) {
+                lookupError.textContent = currentLang === 'tr'
+                    ? 'Bu takip numarasıyla eşleşen bir talep bulunamadı. Numarayı kontrol edin.'
+                    : 'No request was found for this reference number. Please check it.';
+                lookupError.hidden = false;
+                return;
+            }
+
+            const statusText = ticketStatusLabels[ticket.status] || ticketStatusLabels.received;
+            const dateText = new Date(ticket.created_at).toLocaleDateString(currentLang === 'tr' ? 'tr-TR' : 'en-GB');
+            const title = document.createElement('strong');
+            title.textContent = currentLang === 'tr' ? 'Talep durumu' : 'Request status';
+            const status = document.createElement('span');
+            status.className = 'ticket-status-pill';
+            status.textContent = statusText;
+            const reference = document.createElement('p');
+            reference.textContent = `#${ticket.ticket_number}`;
+            const created = document.createElement('small');
+            created.textContent = (currentLang === 'tr' ? 'Oluşturulma tarihi: ' : 'Created: ') + dateText;
+            lookupResult.append(title, status, reference, created);
+            lookupResult.hidden = false;
+        } catch (error) {
+            console.error('Ticket lookup failed:', error);
+            lookupError.textContent = currentLang === 'tr'
+                ? 'Sorgulama şu anda yapılamıyor. Lütfen tekrar deneyin.'
+                : 'Status lookup is temporarily unavailable. Please try again.';
+            lookupError.hidden = false;
+        } finally {
+            button.disabled = false;
+            button.textContent = oldText;
+        }
     });
 
     renderTechFeed("#hn-news-list");
