@@ -1,11 +1,13 @@
 (() => {
   "use strict";
 
-  // Supabase Dashboard > Project Settings > API: use Project URL + publishable/anon key.
-  // Never place a service_role or secret key in browser code.
   const SUPABASE_URL = "https://dkhkvpspgniygdqgwtyh.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_MPa3mW5WwmD3eVt_PI2X2Q_tqVCYhmd";
   const ADMIN_UID = "03347b3f-833f-4ff0-97d0-2dd1e4348b3f";
+  const STORAGE_BUCKET = "blog-covers";
+  const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+  const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/avif"];
+  const SITE_URL = "https://kaanipek.net.tr";
 
   document.addEventListener("DOMContentLoaded", initSupabaseBlog);
 
@@ -16,6 +18,7 @@
     const statusEl = document.getElementById("blog-status");
     const detailEl = document.getElementById("blog-detail");
     const filtersEl = document.getElementById("blog-filters");
+    const headerEl = document.querySelector(".blog-header");
     const loginPanel = document.getElementById("admin-login-panel");
     const loginForm = document.getElementById("admin-login-form");
     const loginToggle = document.getElementById("adminLoginToggle");
@@ -31,34 +34,94 @@
     const readTimeInput = document.getElementById("postReadTime");
     const summaryInput = document.getElementById("postSummary");
     const contentInput = document.getElementById("postContent");
+    const coverInput = document.getElementById("coverImageFile");
+    const coverPreview = document.getElementById("coverImagePreview");
+    const metaDescriptionInput = document.getElementById("metaDescription");
 
     let supabaseClient = null;
     let databasePosts = [];
     let posts = [];
     let activeCategory = "Tümü";
     let editingId = null;
+    let editingPost = null;
     let isAdmin = false;
+    let currentObjectUrl = null;
 
     const setStatus = (message, isError = false) => {
+      if (!statusEl) return;
       statusEl.textContent = message;
       statusEl.classList.toggle("is-error", isError);
     };
     const escape = (value = "") => String(value)
       .replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
       .replaceAll('"', "&quot;").replaceAll("'", "&#39;");
-    const slugify = (value) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    const slugify = (value) => String(value).normalize("NFD").replace(/[\u0300-\u036f]/g, "")
       .replace(/ı/g, "i").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "yazi";
+    const safeImageUrl = (value) => {
+      try {
+        const url = new URL(String(value || ""), SITE_URL);
+        return url.protocol === "https:" ? url.href : "";
+      } catch { return ""; }
+    };
     const normalize = (p) => ({
       ...p,
       slug: p.slug || slugify(p.title || ""),
       date: p.date || (p.created_at ? p.created_at.slice(0, 10) : ""),
       readTime: p.readTime || p.read_time || "3 dk",
       summary: p.summary || p.excerpt || "",
+      coverImage: p.coverImage || p.cover_image || "",
+      metaDescription: p.metaDescription || p.meta_description || "",
       content: Array.isArray(p.content) ? p.content : String(p.content || "").split(/\n\s*\n/).filter(Boolean)
     });
-    const sortPosts = (items) => items
-      .map(normalize)
+    const sortPosts = (items) => items.map(normalize)
       .sort((a,b) => String(b.date).localeCompare(String(a.date)));
+    const absolutePostUrl = (post) => SITE_URL + "/blog/" + encodeURIComponent(post.slug);
+    const setMeta = (name, content, attribute = "name") => {
+      let element = document.head.querySelector("meta[" + attribute + '="' + name + '"]');
+      if (!element) {
+        element = document.createElement("meta");
+        element.setAttribute(attribute, name);
+        document.head.appendChild(element);
+      }
+      element.setAttribute("content", content || "");
+    };
+    const setCanonical = (url) => {
+      let link = document.head.querySelector('link[rel="canonical"]');
+      if (!link) {
+        link = document.createElement("link");
+        link.rel = "canonical";
+        document.head.appendChild(link);
+      }
+      link.href = url;
+    };
+    function updateSeo(post) {
+      if (!post) {
+        document.title = "Blog — Veysel Kaan İpek";
+        const description = "Altyapı, yazılım geliştirme ve mühendislik üzerine teknik notlar.";
+        setMeta("description", description);
+        setMeta("og:type", "website", "property");
+        setMeta("og:title", "Blog — Veysel Kaan İpek", "property");
+        setMeta("og:description", description, "property");
+        setMeta("og:url", SITE_URL + "/blog.html", "property");
+        setMeta("og:image", "", "property");
+        setMeta("twitter:card", "summary", "name");
+        setCanonical(SITE_URL + "/blog.html");
+        return;
+      }
+      const description = (post.metaDescription || post.summary || "").slice(0, 320);
+      document.title = post.title + " | Veysel Kaan İpek";
+      setMeta("description", description);
+      setMeta("og:type", "article", "property");
+      setMeta("og:title", post.title, "property");
+      setMeta("og:description", description, "property");
+      setMeta("og:url", absolutePostUrl(post), "property");
+      setMeta("og:image", safeImageUrl(post.coverImage), "property");
+      setMeta("twitter:card", post.coverImage ? "summary_large_image" : "summary", "name");
+      setMeta("twitter:title", post.title, "name");
+      setMeta("twitter:description", description, "name");
+      if (post.coverImage) setMeta("twitter:image", safeImageUrl(post.coverImage), "name");
+      setCanonical(absolutePostUrl(post));
+    }
     const updateAdminUI = () => {
       [addButton, copyButton, logoutButton].forEach(el => el?.classList.toggle("hidden", !isAdmin));
       loginToggle?.classList.toggle("hidden", isAdmin);
@@ -69,18 +132,31 @@
       }
     };
 
+    function showListRoute(updateHistory = false) {
+      if (updateHistory && location.pathname !== "/blog.html") {
+        history.pushState({}, "", "/blog.html");
+      }
+      detailEl.classList.add("hidden");
+      detailEl.innerHTML = "";
+      listEl.classList.remove("hidden");
+      filtersEl?.classList.remove("hidden");
+      headerEl?.classList.remove("hidden");
+      updateSeo(null);
+      window.scrollTo({top:0,behavior:"smooth"});
+    }
+
     function renderFilters() {
+      if (!filtersEl) return;
       const categories = ["Tümü", ...new Set(posts.map(p => p.category).filter(Boolean))];
       filtersEl.innerHTML = "";
       categories.forEach(category => {
         const button = document.createElement("button");
         button.type = "button";
-        button.className = `filter-btn ${category === activeCategory ? "active" : ""}`;
+        button.className = "filter-btn " + (category === activeCategory ? "active" : "");
         button.textContent = category;
         button.addEventListener("click", () => {
           activeCategory = category;
-          detailEl.classList.add("hidden");
-          detailEl.innerHTML = "";
+          showListRoute(false);
           renderFilters();
           renderList();
         });
@@ -88,18 +164,34 @@
       });
     }
 
-    function openPost(post) {
-      detailEl.classList.remove("hidden");
-      detailEl.innerHTML = `
+    function openPost(post, updateHistory = true) {
+      if (updateHistory) history.pushState({blogPost:post.slug}, "", "/blog/" + encodeURIComponent(post.slug));
+      const cover = safeImageUrl(post.coverImage);
+      const paragraphs = post.content.map(p => "<p>" + escape(p) + "</p>").join("");
+      detailEl.innerHTML = \`
         <button type="button" id="back-to-list" class="back-btn">← Tüm Yazılara Dön</button>
-        <div class="blog-meta"><span>${escape(post.category)}</span><span>${escape(post.date)}</span><span>${escape(post.readTime)}</span></div>
-        <h2>${escape(post.title)}</h2>
-        ${post.content.map(p => `<p>${escape(p)}</p>`).join("")}`;
-      document.getElementById("back-to-list")?.addEventListener("click", () => {
-        detailEl.classList.add("hidden");
-        detailEl.innerHTML = "";
+        <div class="blog-meta"><span>\${escape(post.category)}</span><span>\${escape(post.date)}</span><span>\${escape(post.readTime)}</span></div>
+        <h1>\${escape(post.title)}</h1>
+        \${cover ? '<img class="blog-detail-cover" src="' + escape(cover) + '" alt="' + escape(post.title) + '" loading="eager">' : ""}
+        <p class="blog-detail-summary">\${escape(post.summary)}</p>
+        <div class="blog-share-row">
+          <a href="\${escape(absolutePostUrl(post))}">\${escape(absolutePostUrl(post))}</a>
+          <button type="button" id="copy-post-link">Bağlantıyı Kopyala</button>
+        </div>
+        <div class="blog-detail-content">\${paragraphs}</div>\`;
+      detailEl.classList.remove("hidden");
+      listEl.classList.add("hidden");
+      filtersEl?.classList.add("hidden");
+      headerEl?.classList.add("hidden");
+      updateSeo(post);
+      document.getElementById("back-to-list")?.addEventListener("click", () => showListRoute(true));
+      document.getElementById("copy-post-link")?.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(absolutePostUrl(post));
+          setStatus("Yazı bağlantısı panoya kopyalandı.");
+        } catch { setStatus("Bağlantı kopyalanamadı.", true); }
       });
-      detailEl.scrollIntoView({behavior:"smooth",block:"start"});
+      window.scrollTo({top:0,behavior:"smooth"});
     }
 
     function renderList() {
@@ -112,14 +204,13 @@
       filtered.forEach(post => {
         const card = document.createElement("article");
         card.className = "blog-card";
-        card.innerHTML = `
-          <div class="blog-meta"><span>${escape(post.category)}</span><span>${escape(post.date)}</span><span>${escape(post.readTime)}</span></div>
-          <h3>${escape(post.title)}</h3><p>${escape(post.summary)}</p>
+        const cover = safeImageUrl(post.coverImage);
+        card.innerHTML = \`
+          \${cover ? '<img class="blog-card-cover" src="' + escape(cover) + '" alt="' + escape(post.title) + '" loading="lazy">' : ""}
+          <div class="blog-meta"><span>\${escape(post.category)}</span><span>\${escape(post.date)}</span><span>\${escape(post.readTime)}</span></div>
+          <h3>\${escape(post.title)}</h3><p>\${escape(post.summary)}</p>
           <button type="button" class="read-btn">Yazıyı Oku →</button>
-          ${isAdmin && post.id ? `<div class="blog-card-admin-actions">
-            <button type="button" data-action="edit">Düzenle</button>
-            <button type="button" data-action="delete">Sil</button>
-          </div>` : ""}`;
+          \${isAdmin && post.id ? '<div class="blog-card-admin-actions"><button type="button" data-action="edit">Düzenle</button><button type="button" data-action="delete">Sil</button></div>' : ""}\`;
         card.querySelector(".read-btn").addEventListener("click", () => openPost(post));
         if (isAdmin && post.id) {
           card.querySelector('[data-action="edit"]')?.addEventListener("click", () => beginEdit(post));
@@ -129,8 +220,23 @@
       });
     }
 
+    function updateCoverPreview(url) {
+      if (!coverPreview) return;
+      if (currentObjectUrl) URL.revokeObjectURL(currentObjectUrl);
+      currentObjectUrl = null;
+      const safe = safeImageUrl(url);
+      if (safe) {
+        coverPreview.src = safe;
+        coverPreview.classList.remove("hidden");
+      } else {
+        coverPreview.removeAttribute("src");
+        coverPreview.classList.add("hidden");
+      }
+    }
+
     function beginEdit(post) {
       editingId = post.id;
+      editingPost = post;
       titleInput.value = post.title;
       categorySelect.value = ["DevOps & Altyapı","SAP & Sistem","İHA & Simülasyon"].includes(post.category) ? post.category : "custom";
       customCategory.value = categorySelect.value === "custom" ? post.category : "";
@@ -138,20 +244,40 @@
       customCategory.disabled = categorySelect.value !== "custom";
       readTimeInput.value = post.readTime;
       summaryInput.value = post.summary;
-      contentInput.value = post.content.join("\n\n");
+      contentInput.value = post.content.join("\\n\\n");
+      metaDescriptionInput.value = post.metaDescription || "";
+      coverInput.value = "";
+      updateCoverPreview(post.coverImage);
       document.getElementById("blog-form-title").textContent = "Blog Yazısını Düzenle";
       formPanel.classList.remove("hidden");
       addButton.setAttribute("aria-expanded","true");
       detailEl.classList.add("hidden");
+      listEl.classList.remove("hidden");
       formPanel.scrollIntoView({behavior:"smooth",block:"start"});
     }
 
     function resetEditor() {
       editingId = null;
+      editingPost = null;
       postForm.reset();
+      updateCoverPreview("");
       document.getElementById("blog-form-title").textContent = "Yeni Blog Yazısı";
       customCategory.classList.add("hidden");
       customCategory.disabled = true;
+    }
+
+    async function uploadCover(file) {
+      if (!file) return editingPost?.coverImage || "";
+      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) throw new Error("Yalnızca JPG, PNG, WebP veya AVIF görsel yükleyebilirsin.");
+      if (file.size > MAX_IMAGE_SIZE) throw new Error("Kapak görseli 5 MB sınırını aşamaz.");
+      const extension = ({ "image/jpeg":"jpg", "image/png":"png", "image/webp":"webp", "image/avif":"avif" })[file.type];
+      const path = Date.now() + "-" + Math.random().toString(36).slice(2,10) + "." + extension;
+      const {error} = await supabaseClient.storage.from(STORAGE_BUCKET).upload(path,file,{
+        cacheControl:"3600", upsert:false, contentType:file.type
+      });
+      if (error) throw error;
+      const {data} = supabaseClient.storage.from(STORAGE_BUCKET).getPublicUrl(path);
+      return data.publicUrl;
     }
 
     async function loadPosts() {
@@ -162,23 +288,36 @@
       posts = sortPosts(databasePosts);
       renderFilters();
       renderList();
+      const routeSlug = decodeURIComponent(location.pathname.match(/^\/blog\/([^/]+)\/?$/)?.[1] || new URLSearchParams(location.search).get("slug") || "");
+      if (routeSlug) {
+        const post = posts.find(p => p.slug === routeSlug);
+        if (post) openPost(post, false);
+        else {
+          showListRoute(false);
+          setStatus("Aradığın blog yazısı bulunamadı.", true);
+        }
+      } else {
+        showListRoute(false);
+      }
     }
 
     async function deletePost(post) {
-      if (!confirm(`“${post.title}” yazısını silmek istediğine emin misin?`)) return;
+      if (!confirm("“" + post.title + "” yazısını silmek istediğine emin misin?")) return;
       const {error} = await supabaseClient.from("posts").delete().eq("id",post.id);
       if (error) { setStatus("Yazı silinemedi: " + error.message,true); return; }
       databasePosts = databasePosts.filter(p => p.id !== post.id);
       posts = sortPosts(databasePosts);
       renderFilters(); renderList();
+      if (editingId === post.id) resetEditor();
       setStatus("Yazı Supabase veritabanından silindi.");
+      if (location.pathname.startsWith("/blog/")) showListRoute(true);
     }
 
     loginToggle?.addEventListener("click", () => loginPanel.classList.toggle("hidden"));
     loginCancel?.addEventListener("click", () => loginPanel.classList.add("hidden"));
     loginForm?.addEventListener("submit", async (event) => {
       event.preventDefault();
-      if (!supabaseClient) return setStatus("Önce Supabase URL ve public key ayarlanmalı.",true);
+      if (!supabaseClient) return setStatus("Supabase bağlantısı hazır değil.",true);
       const email = document.getElementById("adminEmail").value.trim();
       const password = document.getElementById("adminPassword").value;
       const {data,error} = await supabaseClient.auth.signInWithPassword({email,password});
@@ -207,10 +346,7 @@
       const opening = formPanel.classList.contains("hidden");
       formPanel.classList.toggle("hidden",!opening);
       addButton.setAttribute("aria-expanded",String(opening));
-      if (opening) {
-        resetEditor();
-        titleInput.focus();
-      }
+      if (opening) { resetEditor(); titleInput.focus(); }
     });
     document.getElementById("cancelPostForm")?.addEventListener("click", () => {
       formPanel.classList.add("hidden");
@@ -224,6 +360,20 @@
       customCategory.required = custom;
       if (custom) customCategory.focus();
     });
+    coverInput?.addEventListener("change", () => {
+      const file = coverInput.files?.[0];
+      if (!file) return updateCoverPreview(editingPost?.coverImage || "");
+      if (!ALLOWED_IMAGE_TYPES.includes(file.type) || file.size > MAX_IMAGE_SIZE) {
+        coverInput.value = "";
+        setStatus("Görsel JPG, PNG, WebP veya AVIF olmalı ve 5 MB'ı aşmamalı.", true);
+        updateCoverPreview(editingPost?.coverImage || "");
+        return;
+      }
+      if (currentObjectUrl) URL.revokeObjectURL(currentObjectUrl);
+      currentObjectUrl = URL.createObjectURL(file);
+      coverPreview.src = currentObjectUrl;
+      coverPreview.classList.remove("hidden");
+    });
 
     postForm?.addEventListener("submit", async (event) => {
       event.preventDefault();
@@ -233,34 +383,57 @@
       const readTime = readTimeInput.value.trim();
       const summary = summaryInput.value.trim();
       const content = contentInput.value.split(/\r?\n\s*\r?\n/).map(s=>s.trim()).filter(Boolean);
-      if (!title || !category || !readTime || !summary || !content.length) return setStatus("Lütfen tüm alanları doldur.",true);
+      const metaDescription = metaDescriptionInput.value.trim() || summary;
+      if (!title || !category || !readTime || !summary || !content.length) return setStatus("Lütfen tüm zorunlu alanları doldur.",true);
+      const selectedFile = coverInput.files?.[0] || null;
+      if (selectedFile && (!ALLOWED_IMAGE_TYPES.includes(selectedFile.type) || selectedFile.size > MAX_IMAGE_SIZE)) {
+        return setStatus("Görsel JPG, PNG, WebP veya AVIF olmalı ve 5 MB'ı aşmamalı.",true);
+      }
       const wasEditing = Boolean(editingId);
-      const payload = {
-        title, slug: slugify(title), category, read_time: readTime,
-        excerpt: summary, content: content.join("\n\n"), author: "Veysel Kaan İpek"
-      };
-      const query = editingId
-        ? supabaseClient.from("posts").update(payload).eq("id",editingId)
-        : supabaseClient.from("posts").insert(payload);
-      const {error} = await query;
-      if (error) { setStatus("Yazı kaydedilemedi: " + error.message,true); return; }
-      formPanel.classList.add("hidden");
-      addButton.setAttribute("aria-expanded","false");
-      resetEditor();
-      await loadPosts();
-      setStatus(wasEditing ? "Yazı güncellendi." : "Yazı Supabase'e kaydedildi.");
+      const saveButton = postForm.querySelector('button[type="submit"]');
+      saveButton.disabled = true;
+      saveButton.textContent = "Kaydediliyor...";
+      try {
+        const coverImage = await uploadCover(selectedFile);
+        const payload = {
+          title, slug: slugify(title), category, read_time: readTime,
+          excerpt: summary, content: content.join("\\n\\n"),
+          author: "Veysel Kaan İpek", cover_image: coverImage,
+          meta_description: metaDescription
+        };
+        const query = editingId
+          ? supabaseClient.from("posts").update(payload).eq("id",editingId)
+          : supabaseClient.from("posts").insert(payload);
+        const {error} = await query;
+        if (error) throw error;
+        formPanel.classList.add("hidden");
+        addButton.setAttribute("aria-expanded","false");
+        resetEditor();
+        await loadPosts();
+        setStatus(wasEditing ? "Yazı güncellendi." : "Yazı Supabase'e kaydedildi.");
+      } catch (error) {
+        setStatus("Yazı kaydedilemedi: " + (error.message || "Bilinmeyen hata"),true);
+      } finally {
+        saveButton.disabled = false;
+        saveButton.textContent = "Yazıyı Kaydet";
+      }
     });
 
     copyButton?.addEventListener("click", async () => {
-      const output = JSON.stringify(posts,null,2);
       try {
-        await navigator.clipboard.writeText(output);
+        await navigator.clipboard.writeText(JSON.stringify(posts,null,2));
         setStatus("Yazıların JSON çıktısı panoya kopyalandı.");
       } catch { setStatus("Panoya kopyalama başarısız oldu.",true); }
     });
 
-    if (SUPABASE_URL.startsWith("https://") && !SUPABASE_URL.includes("YOUR_") &&
-        SUPABASE_ANON_KEY && !SUPABASE_ANON_KEY.includes("YOUR_") && window.supabase?.createClient) {
+    window.addEventListener("popstate", () => {
+      const slug = decodeURIComponent(location.pathname.match(/^\/blog\/([^/]+)\/?$/)?.[1] || new URLSearchParams(location.search).get("slug") || "");
+      const post = slug ? posts.find(p => p.slug === slug) : null;
+      if (post) openPost(post, false);
+      else showListRoute(false);
+    });
+
+    if (SUPABASE_URL.startsWith("https://") && SUPABASE_ANON_KEY && window.supabase?.createClient) {
       supabaseClient = window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
       const {data:{session}} = await supabaseClient.auth.getSession();
       isAdmin = session?.user?.id === ADMIN_UID;
