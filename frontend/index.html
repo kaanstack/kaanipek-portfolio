@@ -243,9 +243,13 @@
             </div>
 
             <div class="card ticket-card">
-                <form name="ticket" method="POST" data-netlify="true" id="ticketForm" class="ticket-form">
+                <form name="ticket" method="POST" data-netlify="true" netlify-honeypot="bot-field" id="ticketForm" class="ticket-form">
                     <input type="hidden" name="form-name" value="ticket">
                     <input type="hidden" name="ticket-id" id="hiddenTicketId">
+                    <div class="hidden" aria-hidden="true">
+                        <label for="ticketBotField">Bu alanı boş bırakın</label>
+                        <input type="text" name="bot-field" id="ticketBotField" tabindex="-1" autocomplete="off">
+                    </div>
 
                     <div class="form-row">
                         <div class="form-group">
