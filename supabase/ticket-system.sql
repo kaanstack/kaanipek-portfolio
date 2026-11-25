@@ -26,8 +26,8 @@ create policy "Ticket admin can manage records"
 on public.tickets
 for all
 to authenticated
-using (auth.uid() = '03347b3f-833f-4ff0-97d2-2dd1e4348b3f'::uuid)
-with check (auth.uid() = '03347b3f-833f-4ff0-97d2-2dd1e4348b3f'::uuid);
+using (auth.uid() = '03347b3f-833f-4ff0-97d0-2dd1e4348b3f'::uuid)
+with check (auth.uid() = '03347b3f-833f-4ff0-97d0-2dd1e4348b3f'::uuid);
 
 revoke all on public.tickets from anon, authenticated;
 grant select, insert, update, delete on public.tickets to authenticated;
