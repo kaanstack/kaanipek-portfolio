@@ -94,7 +94,7 @@ async function renderTechFeed(containerSelector, limit = 5) {
     }
 }
 
-function escapeHtml(str) {
+function escapeHtml(str = "") {
     return String(str)
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
@@ -252,3 +252,261 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderTechFeed("#hn-news-list");
 });
+
+async function initBlogPage() {
+  const listEl = document.getElementById("blog-list");
+  const detailEl = document.getElementById("blog-detail");
+  const filtersEl = document.getElementById("blog-filters");
+  const formPanel = document.getElementById("blog-form-panel");
+  const postForm = document.getElementById("blog-post-form");
+  const statusEl = document.getElementById("blog-status");
+  const storageKey = "vki_blog_posts";
+  if (!listEl || !detailEl || !filtersEl || !formPanel || !postForm || !statusEl) return;
+
+  const addButton = document.getElementById("newPostToggle");
+  const cancelButton = document.getElementById("cancelPostForm");
+  const copyButton = document.getElementById("copyPostsJson");
+  const categorySelect = document.getElementById("postCategory");
+  const customCategoryInput = document.getElementById("customPostCategory");
+  const titleInput = document.getElementById("postTitle");
+  const readTimeInput = document.getElementById("postReadTime");
+  const summaryInput = document.getElementById("postSummary");
+  const contentInput = document.getElementById("postContent");
+
+  let basePosts = [];
+  let localPosts = [];
+  let posts = [];
+  let activeCategory = "Tümü";
+
+  function setStatus(message, isError = false) {
+    statusEl.textContent = message;
+    statusEl.classList.toggle("is-error", isError);
+  }
+
+  function createSlug(value) {
+    return value
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/ı/g, "i")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+  }
+
+  function normalizePost(post) {
+    if (!post || typeof post !== "object" || typeof post.title !== "string") return null;
+    const slug = typeof post.slug === "string" && post.slug ? post.slug : createSlug(post.title);
+    return { ...post, slug: slug || "yazi" };
+  }
+
+  function mergePosts(...sources) {
+    const merged = new Map();
+    sources.flat().forEach((postData) => {
+      const post = normalizePost(postData);
+      if (post && !merged.has(post.slug)) merged.set(post.slug, post);
+    });
+    return [...merged.values()];
+  }
+
+  function renderFilters() {
+    const categories = ["Tümü", ...new Set(posts.map((post) => post.category).filter(Boolean))];
+    filtersEl.innerHTML = "";
+    categories.forEach((category) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = `filter-btn ${category === activeCategory ? "active" : ""}`;
+      button.textContent = category;
+      button.addEventListener("click", () => {
+        activeCategory = category;
+        detailEl.classList.add("hidden");
+        detailEl.innerHTML = "";
+        renderFilters();
+        renderList();
+      });
+      filtersEl.appendChild(button);
+    });
+  }
+
+  function openPost(post) {
+    const paragraphs = Array.isArray(post.content) ? post.content : [];
+    detailEl.classList.remove("hidden");
+    detailEl.innerHTML = `
+      <button type="button" id="back-to-list" class="back-btn">← Tüm Yazılara Dön</button>
+      <div class="blog-meta">
+        <span>${escapeHtml(post.category || "")}</span>
+        <span>${escapeHtml(post.date || "")}</span>
+        <span>${escapeHtml(post.readTime || "")}</span>
+      </div>
+      <h2>${escapeHtml(post.title)}</h2>
+      ${paragraphs.map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join("")}
+    `;
+    document.getElementById("back-to-list")?.addEventListener("click", () => {
+      detailEl.classList.add("hidden");
+      detailEl.innerHTML = "";
+    });
+    detailEl.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function renderList() {
+    const filtered = activeCategory === "Tümü"
+      ? posts
+      : posts.filter((post) => post.category === activeCategory);
+
+    listEl.innerHTML = "";
+    if (!filtered.length) {
+      listEl.innerHTML = "<p>Bu kategoride henüz yazı yok.</p>";
+      return;
+    }
+
+    filtered.forEach((post) => {
+      const card = document.createElement("article");
+      card.className = "blog-card";
+      card.innerHTML = `
+        <div class="blog-meta">
+          <span>${escapeHtml(post.category || "")}</span>
+          <span>${escapeHtml(post.date || "")}</span>
+          <span>${escapeHtml(post.readTime || "")}</span>
+        </div>
+        <h3>${escapeHtml(post.title)}</h3>
+        <p>${escapeHtml(post.summary || "")}</p>
+        <button type="button" class="read-btn">Yazıyı Oku →</button>
+      `;
+      card.querySelector(".read-btn")?.addEventListener("click", () => openPost(post));
+      listEl.appendChild(card);
+    });
+  }
+
+  function updateCustomCategory() {
+    const isCustom = categorySelect.value === "custom";
+    customCategoryInput.classList.toggle("hidden", !isCustom);
+    customCategoryInput.disabled = !isCustom;
+    customCategoryInput.required = isCustom;
+    if (isCustom) customCategoryInput.focus();
+  }
+
+  function closeForm() {
+    formPanel.classList.add("hidden");
+    addButton.setAttribute("aria-expanded", "false");
+    postForm.reset();
+    updateCustomCategory();
+  }
+
+  function copyTextFallback(text) {
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.setAttribute("readonly", "");
+    textarea.style.position = "fixed";
+    textarea.style.opacity = "0";
+    document.body.appendChild(textarea);
+    let copied = false;
+    try {
+      textarea.select();
+      copied = document.execCommand("copy");
+    } finally {
+      textarea.remove();
+    }
+    if (!copied) throw new Error("Pano kopyalama başarısız");
+  }
+
+  async function copyPostsJson() {
+    const output = JSON.stringify(mergePosts(basePosts, localPosts), null, 2);
+    try {
+      await navigator.clipboard.writeText(output);
+    } catch (clipboardError) {
+      try {
+        copyTextFallback(output);
+      } catch (fallbackError) {
+        setStatus("JSON panoya kopyalanamadı. Yazılar tarayıcıda kayıtlı kalır.", true);
+        return;
+      }
+    }
+    setStatus("Birleştirilmiş JSON panoya kopyalandı.");
+  }
+
+  addButton.addEventListener("click", () => {
+    const isOpening = formPanel.classList.contains("hidden");
+    formPanel.classList.toggle("hidden", !isOpening);
+    addButton.setAttribute("aria-expanded", String(isOpening));
+    if (isOpening) titleInput.focus();
+  });
+
+  cancelButton.addEventListener("click", closeForm);
+  categorySelect.addEventListener("change", updateCustomCategory);
+  copyButton.addEventListener("click", copyPostsJson);
+
+  postForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const title = titleInput.value.trim();
+    const category = categorySelect.value === "custom"
+      ? customCategoryInput.value.trim()
+      : categorySelect.value;
+    const summary = summaryInput.value.trim();
+    const content = contentInput.value
+      .split(/\r?\n\s*\r?\n/)
+      .map((paragraph) => paragraph.trim())
+      .filter(Boolean);
+
+    if (!title || !category || !readTimeInput.value.trim() || !summary || !content.length) {
+      setStatus("Tüm alanları doldurun; içerikte en az bir paragraf olmalı.", true);
+      return;
+    }
+
+    const existingSlugs = new Set(mergePosts(basePosts, localPosts).map((post) => post.slug));
+    const baseSlug = createSlug(title) || "yazi";
+    let slug = baseSlug;
+    let suffix = 2;
+    while (existingSlugs.has(slug)) slug = `${baseSlug}-${suffix++}`;
+
+    const newPost = {
+      slug,
+      title,
+      date: new Date().toISOString().slice(0, 10),
+      category,
+      readTime: readTimeInput.value.trim(),
+      summary,
+      content
+    };
+    const updatedLocalPosts = [...localPosts, newPost];
+
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(updatedLocalPosts));
+    } catch (storageError) {
+      setStatus("Yazı tarayıcıya kaydedilemedi. Depolama alanını kontrol edin.", true);
+      return;
+    }
+
+    localPosts = updatedLocalPosts;
+    posts = mergePosts(basePosts, localPosts);
+    activeCategory = "Tümü";
+    renderFilters();
+    renderList();
+    closeForm();
+    setStatus("Yazı kaydedildi ve listeye eklendi. Kalıcı yayın için JSON çıktısını kopyalayın.");
+  });
+
+  localPosts = [];
+  try {
+    const storedPosts = JSON.parse(localStorage.getItem(storageKey) || "[]");
+    if (!Array.isArray(storedPosts)) throw new Error("Yerel yazı verisi geçersiz");
+    localPosts = storedPosts.map(normalizePost).filter(Boolean);
+  } catch (storageError) {
+    setStatus("Tarayıcıdaki yerel yazılar okunamadı.", true);
+  }
+
+  try {
+    const response = await fetch("posts.json");
+    if (!response.ok) throw new Error(`posts.json yüklenemedi (${response.status})`);
+    const data = await response.json();
+    if (!Array.isArray(data)) throw new Error("posts.json bir yazı listesi olmalı");
+    basePosts = data;
+  } catch (loadError) {
+    setStatus("posts.json yüklenemedi; yalnızca tarayıcıya kaydedilen yazılar gösteriliyor.", true);
+  }
+
+  posts = mergePosts(basePosts, localPosts);
+  renderFilters();
+  renderList();
+  updateCustomCategory();
+}
+
+document.addEventListener("DOMContentLoaded", initBlogPage);

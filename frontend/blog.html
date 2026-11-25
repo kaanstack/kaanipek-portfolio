@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blog — Veysel Kaan İpek</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="navbar">
+    <div class="nav-container blog-nav-container">
+      <a href="index.html" class="brand" aria-label="Veysel Kaan İpek Ana Sayfa">
+        <svg viewBox="0 0 64 64" width="38" height="38" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <defs>
+            <linearGradient id="vkiNavGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#38bdf8" />
+              <stop offset="100%" stop-color="#10b981" />
+            </linearGradient>
+          </defs>
+          <rect width="64" height="64" rx="16" fill="#070a11"/>
+          <rect x="1.5" y="1.5" width="61" height="61" rx="14.5" fill="none" stroke="url(#vkiNavGrad)" stroke-width="2" stroke-opacity="0.75"/>
+          <path d="M12 22 L20 43 L28 22" fill="none" stroke="#f3f4f6" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M32 22 V43 M32 32.5 L41 22 M35.5 29 L42 43" fill="none" stroke="#f3f4f6" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M49 27 V43" fill="none" stroke="#f3f4f6" stroke-width="3.4" stroke-linecap="round"/>
+          <circle cx="49" cy="21.5" r="2.3" fill="#38bdf8"/>
+        </svg>
+        <span class="brand-name">kaanipek<span class="accent">.net.tr</span></span>
+      </a>
+      <nav class="nav-links blog-nav-links" aria-label="Sayfa bağlantıları">
+        <a href="index.html" class="btn btn-secondary blog-home-link">← Ana Sayfa</a>
+      </nav>
+      <div class="nav-controls">
+        <button type="button" id="themeToggleBtn" class="theme-btn" aria-label="Temayı Değiştir" title="Aydınlık / Karanlık Mod">☀️</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container blog-main">
+    <section class="blog-header">
+      <h1>Teknik Notlar &amp; Blog</h1>
+      <p>Altyapı, yazılım geliştirme ve sahadaki mühendislik notları</p>
+      <div id="blog-filters" class="blog-filters"></div>
+    </section>
+
+    <section class="blog-tools" aria-label="Blog yazısı işlemleri">
+      <div class="blog-toolbar">
+        <button type="button" id="newPostToggle" class="btn btn-primary" aria-expanded="false" aria-controls="blog-form-panel">✍ Yeni Yazı Ekle</button>
+        <button type="button" id="copyPostsJson" class="btn btn-secondary">JSON Çıktısını Kopyala</button>
+      </div>
+      <p id="blog-status" class="blog-status" role="status" aria-live="polite"></p>
+    </section>
+
+    <section id="blog-form-panel" class="blog-form-panel hidden" aria-labelledby="blog-form-title">
+      <h2 id="blog-form-title">Yeni Blog Yazısı</h2>
+      <form id="blog-post-form" class="blog-form">
+        <div class="blog-form-grid">
+          <div class="form-group">
+            <label for="postTitle">Başlık</label>
+            <input id="postTitle" name="title" type="text" required maxlength="160">
+          </div>
+          <div class="form-group">
+            <label for="postCategory">Kategori</label>
+            <select id="postCategory" name="category" required>
+              <option value="DevOps &amp; Altyapı">DevOps &amp; Altyapı</option>
+              <option value="SAP &amp; Sistem">SAP &amp; Sistem</option>
+              <option value="İHA &amp; Simülasyon">İHA &amp; Simülasyon</option>
+              <option value="custom">Özel kategori...</option>
+            </select>
+            <input id="customPostCategory" class="blog-custom-category hidden" type="text" maxlength="80" placeholder="Kategori adını yazın" aria-label="Özel kategori">
+          </div>
+          <div class="form-group">
+            <label for="postReadTime">Okuma Süresi</label>
+            <input id="postReadTime" name="readTime" type="text" required maxlength="40" placeholder="Örn: 5 dk">
+          </div>
+          <div class="form-group blog-form-wide">
+            <label for="postSummary">Özet</label>
+            <textarea id="postSummary" name="summary" rows="3" required maxlength="500"></textarea>
+          </div>
+          <div class="form-group blog-form-wide">
+            <label for="postContent">İçerik</label>
+            <textarea id="postContent" name="content" rows="8" required placeholder="Paragrafları boş bir satırla ayırın."></textarea>
+          </div>
+        </div>
+        <div class="blog-form-actions">
+          <button type="submit" class="btn btn-primary">Yazıyı Kaydet</button>
+          <button type="button" id="cancelPostForm" class="btn btn-secondary">Vazgeç</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="blog-detail" class="blog-detail hidden"></section>
+    <section id="blog-list" class="blog-list"></section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

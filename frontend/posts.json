@@ -1,0 +1,27 @@
+[
+  {
+    "slug": "cloudflare-dns-ve-netlify-yayin-akisi",
+    "title": "kaanipek.net.tr: Cloudflare DNS, SSL ve Netlify Yayın Notları",
+    "date": "2026-11-25",
+    "category": "DevOps & Altyapı",
+    "readTime": "3 dk",
+    "summary": "Metunic üzerinden alınan alan adının Cloudflare DNS/TLS ve GitHub + Netlify hattıyla nasıl canlıya alındığına dair pratik notlar.",
+    "content": [
+      "Kişisel portföy altyapısında kodları VS Code ve GitHub (kaanstack) üzerinden yönetip Netlify ile otomatik yayın akışı kurguladım.",
+      "Alan adı tarafında DNS yönetimi, TLS güvenliği ve e-posta yönlendirme (iletisim@kaanipek.net.tr) ayarlarını Cloudflare üzerinden tek merkezden toparlamak bakım sürecini sadeleştiriyor.",
+      "Özellikle ücretsiz dağıtım kotalarını verimli kullanmak için ufak denemeleri yerelde doğrulayıp anlamlı değişiklikleri tek commit ile göndermek iyi bir alışkanlık."
+    ]
+  },
+  {
+    "slug": "sap-abap-z-tablolar-ve-secim-ekrani-notlari",
+    "title": "Kurumsal Geliştirmede Z-Tablolar ve Seçim Ekranı Düzeni",
+    "date": "2026-11-20",
+    "category": "SAP & Sistem",
+    "readTime": "4 dk",
+    "summary": "Bilgi İşlem süreçlerinde özel veritabanı tabloları, veri elemanları, domainler ve seçim ekranlı raporlarda dikkat edilen temel noktalar.",
+    "content": [
+      "Kurumsal sistemlerde özel tablo ve rapor geliştirirken alan tiplerini domain ve veri elemanı düzeyinde tutarlı tanımlamak ilerideki bakım yükünü ciddi biçimde azaltıyor.",
+      "Seçim ekranlarında kullanıcıya gereksiz karmaşa sunmadan net filtre alanları bırakmak ve veri okuma mantığını düzenli kurgulamak hem performansa hem okunabilirliğe katkı sağlıyor."
+    ]
+  }
+]
