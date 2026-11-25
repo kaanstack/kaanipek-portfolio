@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Veysel Kaan İpek | Bilgisayar Mühendisliği & Yazılım</title>
+    <meta name="description" content="Veysel Kaan İpek - Bilgisayar Mühendisliği Öğrencisi, SAP ABAP Geliştirici ve DevOps / Bulut Sistemleri Meraklısı.">
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/favicon.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="#top" class="brand" aria-label="Veysel Kaan İpek Ana Sayfa">
+                <svg viewBox="0 0 64 64" width="38" height="38" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="vkiNavGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#38bdf8" />
+                            <stop offset="100%" stop-color="#10b981" />
+                        </linearGradient>
+                    </defs>
+                    <rect width="64" height="64" rx="16" fill="#070a11"/>
+                    <rect x="1.5" y="1.5" width="61" height="61" rx="14.5" fill="none" stroke="url(#vkiNavGrad)" stroke-width="2" stroke-opacity="0.75"/>
+                    <path d="M12 22 L20 43 L28 22" fill="none" stroke="#f3f4f6" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M32 22 V43 M32 32.5 L41 22 M35.5 29 L42 43" fill="none" stroke="#f3f4f6" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M49 27 V43" fill="none" stroke="#f3f4f6" stroke-width="3.4" stroke-linecap="round"/>
+                    <circle cx="49" cy="21.5" r="2.3" fill="#38bdf8"/>
+                </svg>
+                <span class="brand-name">kaanipek<span class="accent">.net.tr</span></span>
+            </a>
+
+            <nav class="nav-links">
+                <a href="#about" data-tr="Hakkımda" data-en="About">Hakkımda</a>
+                <a href="#experience" data-tr="Deneyim" data-en="Experience">Deneyim</a>
+                <a href="#projects" data-tr="Projeler" data-en="Projects">Projeler</a>
+                <a href="#news" data-tr="Teknoloji Gündemi" data-en="Tech News">Teknoloji Gündemi</a>
+                <a href="#ticket" data-tr="Ticket & İletişim" data-en="Ticket & Contact">Ticket & İletişim</a>
+            </nav>
+
+            <div class="nav-controls">
+                <div class="lang-switch" role="group" aria-label="Dil Seçimi">
+                    <button type="button" class="lang-btn active" data-lang="tr">TR</button>
+                    <button type="button" class="lang-btn" data-lang="en">EN</button>
+                </div>
+                <button type="button" id="themeToggleBtn" class="theme-btn" aria-label="Temayı Değiştir" title="Aydınlık / Karanlık Mod">
+                    ☀️
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main id="top" class="main-wrapper">
+        <!-- HERO BÖLÜMÜ -->
+        <section id="about" class="hero-section">
+            <div class="hero-badge">
+                <span class="pulse-dot"></span>
+                <span data-tr="Bilgisayar Mühendisliği @ KTO Karatay Üniversitesi" data-en="Computer Engineering @ KTO Karatay University">Bilgisayar Mühendisliği @ KTO Karatay Üniversitesi</span>
+            </div>
+
+            <h1 class="hero-title">Veysel Kaan İpek</h1>
+
+            <p class="hero-subtitle"
+               data-tr="Kurumsal ERP sistemleri (SAP ABAP), DevOps & bulut altyapıları ve sistem programlama üzerine odaklanan Bilgisayar Mühendisliği 1. sınıf öğrencisiyim. Ölçeklenebilir arka plan mimarileri ve otomasyon araçları geliştiriyorum."
+               data-en="I am a 1st-year Computer Engineering student focusing on enterprise ERP systems (SAP ABAP), DevOps & cloud infrastructures, and systems programming. I build scalable backend architectures and automation workflows.">
+                Kurumsal ERP sistemleri (SAP ABAP), DevOps & bulut altyapıları ve sistem programlama üzerine odaklanan Bilgisayar Mühendisliği 1. sınıf öğrencisiyim. Ölçeklenebilir arka plan mimarileri ve otomasyon araçları geliştiriyorum.
+            </p>
+
+            <div class="hero-actions">
+                <button type="button" id="openCvBtn" class="btn btn-primary" data-tr="📄 CV Görüntüle" data-en="📄 View Resume">📄 CV Görüntüle</button>
+                <a href="#ticket" class="btn btn-secondary" data-tr="🎫 Ticket Oluştur" data-en="🎫 Open a Ticket">🎫 Ticket Oluştur</a>
+                <a href="mailto:iletisim@kaanipek.net.tr?subject=İletişim%20-%20kaanipek.net.tr" class="btn btn-ghost" id="copyEmailBtn">
+                    ✉ iletisim@kaanipek.net.tr
+                </a>
+                <a href="/github" class="btn btn-ghost" target="_blank" rel="noopener">GitHub ↗</a>
+                <a href="/linkedin" class="btn btn-ghost" target="_blank" rel="noopener">LinkedIn ↗</a>
+                <span id="copyToast" class="copy-toast" data-tr="E-posta kopyalandı!" data-en="Email copied!">E-posta kopyalandı!</span>
+            </div>
+        </section>
+
+        <!-- DENEYİM & TEKNİK YETKİNLİKLER -->
+        <section id="experience" class="content-section">
+            <div class="section-header">
+                <h2 data-tr="Deneyim & Teknik Yetkinlikler" data-en="Experience & Technical Stack">Deneyim & Teknik Yetkinlikler</h2>
+                <p data-tr="Kurumsal yazılım geliştirme süreçleri ve altyapı mühendisliği odak alanlarım"
+                   data-en="Enterprise software development processes and infrastructure engineering focus areas">
+                    Kurumsal yazılım geliştirme süreçleri ve altyapı mühendisliği odak alanlarım
+                </p>
+            </div>
+
+            <div class="grid-two">
+                <article class="card">
+                    <div class="card-top">
+                        <span class="tag-pill" data-tr="Aktif Rol" data-en="Current Role">Aktif Rol</span>
+                        <span class="muted-date">Bilgi İşlem</span>
+                    </div>
+                    <h3>Meram Unları — SAP ABAP Geliştirme</h3>
+                    <p class="card-desc"
+                       data-tr="Bilgi İşlem departmanı bünyesinde SAP ABAP geliştirme süreçlerinde görev alıyorum. Özel veritabanı tabloları (Z-tablolar), veri elemanları (Data Elements), domain yapıları ve seçim ekranlı (Selection-Screen) kurumsal raporlama modülleri tasarlıyorum."
+                       data-en="Working on SAP ABAP development within the IT department. Designing custom database tables (Z-tables), data elements, domain architectures, and selection-screen enterprise reporting modules.">
+                        Bilgi İşlem departmanı bünyesinde SAP ABAP geliştirme süreçlerinde görev alıyorum. Özel veritabanı tabloları (Z-tablolar), veri elemanları (Data Elements), domain yapıları ve seçim ekranlı (Selection-Screen) kurumsal raporlama modülleri tasarlıyorum.
+                    </p>
+                </article>
+
+                <article class="card">
+                    <div class="card-top">
+                        <span class="tag-pill" data-tr="Teknik Yığın" data-en="Tech Stack">Teknik Yığın</span>
+                        <span class="muted-date">2026</span>
+                    </div>
+                    <h3 data-tr="Altyapı, Bulut & Sistem Geliştirme" data-en="Infrastructure, Cloud & Systems">Altyapı, Bulut & Sistem Geliştirme</h3>
+                    <div class="skills-grid">
+                        <span class="skill-tag">SAP ABAP & Data Dictionary</span>
+                        <span class="skill-tag">Linux & Bash</span>
+                        <span class="skill-tag">Cloudflare DNS / SSL / TLS</span>
+                        <span class="skill-tag">DevOps & CI/CD</span>
+                        <span class="skill-tag" data-tr="C Programlama" data-en="C Programming">C Programlama</span>
+                        <span class="skill-tag">Git & GitHub</span>
+                        <span class="skill-tag">HTML / CSS / JS</span>
+                        <span class="skill-tag" data-tr="Gömülü Sistemler & Simülasyon (Ar-Ge)" data-en="Embedded & Simulation (R&D)">Gömülü Sistemler & Simülasyon (Ar-Ge)</span>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <!-- PROJELER -->
+        <section id="projects" class="content-section">
+            <div class="section-header">
+                <h2 data-tr="Öne Çıkan Projeler" data-en="Featured Projects">Öne Çıkan Projeler</h2>
+                <p data-tr="Altyapı, kurumsal yazılım ve sistem programlama alanında geliştirdiğim çalışmalar"
+                   data-en="Works developed in infrastructure, enterprise software, and systems programming">
+                    Altyapı, kurumsal yazılım ve sistem programlama alanında geliştirdiğim çalışmalar
+                </p>
+            </div>
+
+            <div class="grid-three">
+                <article class="card project-card">
+                    <div class="card-top">
+                        <span class="tag-pill">Cloud & DNS</span>
+                        <a href="https://kaanipek.net.tr" class="card-link">Canlı ↗</a>
+                    </div>
+                    <h3>kaanipek.net.tr Bulut & Ağ Mimarisi</h3>
+                    <p class="card-desc"
+                       data-tr="Metunic alan adı yönetimi, Cloudflare Nameserver devri, uçtan uca TLS şifrelemesi, özel kurumsal e-posta yönlendirme (MX/SPF) ve sıfır sunucu maliyetli statik CDN dağıtım altyapısı."
+                       data-en="Metunic domain management, Cloudflare Nameserver delegation, end-to-end TLS encryption, custom email routing (MX/SPF), and zero-server-cost static CDN deployment architecture.">
+                        Metunic alan adı yönetimi, Cloudflare Nameserver devri, uçtan uca TLS şifrelemesi, özel kurumsal e-posta yönlendirme (MX/SPF) ve sıfır sunucu maliyetli statik CDN dağıtım altyapısı.
+                    </p>
+                    <div class="tech-mini">
+                        <span>Cloudflare</span> • <span>DNS/TLS</span> • <span>Static CDN</span>
+                    </div>
+                </article>
+
+                <article class="card project-card">
+                    <div class="card-top">
+                        <span class="tag-pill">SAP ERP</span>
+                        <span class="muted-date">ABAP</span>
+                    </div>
+                    <h3 data-tr="Kurumsal Veri & Raporlama Modülleri" data-en="Enterprise Data & Reporting Modules">Kurumsal Veri & Raporlama Modülleri</h3>
+                    <p class="card-desc"
+                       data-tr="SAP ortamında ilişkisel Z-tablo mimarileri, doğrulama kurallı veri elemanları ve parametrik seçim ekranlarıyla çalışan hızlı kurumsal veri analiz ve raporlama programları."
+                       data-en="Relational Z-table architectures in SAP, validated data elements, and fast enterprise data analysis and reporting programs powered by parametric selection screens.">
+                        SAP ortamında ilişkisel Z-tablo mimarileri, doğrulama kurallı veri elemanları ve parametrik seçim ekranlarıyla çalışan hızlı kurumsal veri analiz ve raporlama programları.
+                    </p>
+                    <div class="tech-mini">
+                        <span>SAP ABAP</span> • <span>SE11 / SE38</span> • <span>Open SQL</span>
+                    </div>
+                </article>
+
+                <article class="card project-card">
+                    <div class="card-top">
+                        <span class="tag-pill">Systems & C</span>
+                        <a href="/github" target="_blank" rel="noopener" class="card-link">GitHub ↗</a>
+                    </div>
+                    <h3 data-tr="Algoritma & Sistem Programlama Kütüphanesi" data-en="Algorithms & Systems Programming Suite">Algoritma & Sistem Programlama Kütüphanesi</h3>
+                    <p class="card-desc"
+                       data-tr="Bellek yönetimi, işaretçi (pointer) yapıları, veri yapıları ve düşük seviyeli optimizasyon teknikleri üzerine C diliyle geliştirilen modüler uygulama ve test koleksiyonu."
+                       data-en="Modular application and test collection developed in C focusing on memory management, pointer structures, data structures, and low-level optimization techniques.">
+                        Bellek yönetimi, işaretçi (pointer) yapıları, veri yapıları ve düşük seviyeli optimizasyon teknikleri üzerine C diliyle geliştirilen modüler uygulama ve test koleksiyonu.
+                    </p>
+                    <div class="tech-mini">
+                        <span>C</span> • <span>Linux</span> • <span>Memory Management</span>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <!-- CANLI TEKNOLOJİ GÜNDEMİ -->
+        <section id="news" class="content-section">
+            <div class="section-header news-section-head">
+                <div>
+                    <h2 data-tr="Günlük Teknoloji Gündemi" data-en="Daily Tech Digest">Günlük Teknoloji Gündemi</h2>
+                    <p data-tr="Hacker News üzerinden anlık çekilen en önemli 5 teknoloji haberi — detayları okumak için başlığa tıklayın"
+                       data-en="Top 5 live tech stories from Hacker News — click any headline to read details">
+                        Hacker News üzerinden anlık çekilen en önemli 5 teknoloji haberi — detayları okumak için başlığa tıklayın
+                    </p>
+                </div>
+                <span class="live-badge" data-tr="CANLI AKIŞ" data-en="LIVE FEED">CANLI AKIŞ</span>
+            </div>
+
+            <div id="hn-news-list" class="news-grid">
+                <div class="news-loading" data-tr="Güncel teknoloji haberleri yükleniyor..." data-en="Loading latest tech stories...">Güncel teknoloji haberleri yükleniyor...</div>
+            </div>
+        </section>
+
+        <!-- DEVOPS TICKET / TALEP MERKEZİ -->
+        <section id="ticket" class="content-section">
+            <div class="section-header news-section-head">
+                <div>
+                    <h2 data-tr="DevOps Ticket & İletişim Merkezi" data-en="DevOps Ticket & Contact Desk">DevOps Ticket & İletişim Merkezi</h2>
+                    <p data-tr="Staj teklifi, proje iş birliği veya teknik sorularınız için doğrudan takip numaralı talep (ticket) oluşturun"
+                       data-en="Create a tracked support/inquiry ticket for internship opportunities, project collaborations, or technical questions">
+                        Staj teklifi, proje iş birliği veya teknik sorularınız için doğrudan takip numaralı talep (ticket) oluşturun
+                    </p>
+                </div>
+                <span class="live-badge">● All Systems Operational</span>
+            </div>
+
+            <div class="card ticket-card">
+                <form name="devops-ticket" method="POST" data-netlify="true" id="ticketForm" class="ticket-form">
+                    <input type="hidden" name="form-name" value="devops-ticket">
+                    <input type="hidden" name="ticket-id" id="hiddenTicketId">
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="senderName" data-tr="Ad Soyad / Kurum" data-en="Full Name / Organization">Ad Soyad / Kurum</label>
+                            <input type="text" id="senderName" name="name" required placeholder="Örn: Ahmet Yılmaz">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="senderEmail" data-tr="E-posta Adresiniz" data-en="Your Email Address">E-posta Adresiniz</label>
+                            <input type="email" id="senderEmail" name="email" required placeholder="ornek@sirket.com">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="ticketCategory" data-tr="Talep Kategorisi" data-en="Ticket Category">Talep Kategorisi</label>
+                            <select id="ticketCategory" name="category">
+                                <option value="internship" data-tr="Staj / Kariyer Fırsatı" data-en="Internship / Career Opportunity">Staj / Kariyer Fırsatı</option>
+                                <option value="collaboration" data-tr="Proje & Ar-Ge İş Birliği" data-en="Project & R&D Collaboration">Proje & Ar-Ge İş Birliği</option>
+                                <option value="technical" data-tr="Teknik Soru (SAP / Cloud / Linux)" data-en="Technical Inquiry (SAP / Cloud / Linux)">Teknik Soru (SAP / Cloud / Linux)</option>
+                                <option value="general" data-tr="Genel İletişim" data-en="General Inquiry">Genel İletişim</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ticketPriority" data-tr="Öncelik Seviyesi" data-en="Priority Level">Öncelik Seviyesi</label>
+                            <select id="ticketPriority" name="priority">
+                                <option value="normal" data-tr="Normal (Standart)" data-en="Normal (Standard)">Normal (Standart)</option>
+                                <option value="high" data-tr="Yüksek (Acil Dönüş)" data-en="High (Urgent)">Yüksek (Acil Dönüş)</option>
+                                <option value="low" data-tr="Düşük (Bilgilendirme)" data-en="Low (Info)">Düşük (Bilgilendirme)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ticketMessage" data-tr="Talep Detayı / Mesajınız" data-en="Ticket Description / Message">Talep Detayı / Mesajınız</label>
+                        <textarea id="ticketMessage" name="message" rows="4" required placeholder="Talebinizin detaylarını buraya yazabilirsiniz..."></textarea>
+                    </div>
+
+                    <div class="ticket-footer">
+                        <span class="muted-date" data-tr="Hedef Kutu: iletisim@kaanipek.net.tr" data-en="Target Inbox: iletisim@kaanipek.net.tr">Hedef Kutu: iletisim@kaanipek.net.tr</span>
+                        <button type="submit" class="btn btn-primary" data-tr="🚀 Ticket Gönder" data-en="🚀 Submit Ticket">🚀 Ticket Gönder</button>
+                    </div>
+                </form>
+
+                <div id="ticketSuccessBox" class="ticket-success" style="display: none;">
+                    <div class="success-header">
+                        <span class="live-badge" id="generatedTicketBadge">#VKI-2026-000</span>
+                        <strong data-tr="Talebiniz Başarıyla Kaydedildi!" data-en="Ticket Successfully Created!">Talebiniz Başarıyla Kaydedildi!</strong>
+                    </div>
+                    <p id="ticketSuccessText"></p>
+                    <button type="button" id="newTicketBtn" class="btn btn-secondary" data-tr="Yeni Ticket Oluştur" data-en="Create Another Ticket">Yeni Ticket Oluştur</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ALT BİLGİ / İLETİŞİM -->
+        <footer id="contact" class="footer">
+            <div class="footer-content">
+                <div>
+                    <strong>Veysel Kaan İpek</strong>
+                    <p data-tr="Konya, Türkiye • Bilgisayar Mühendisliği" data-en="Konya, Turkey • Computer Engineering">Konya, Türkiye • Bilgisayar Mühendisliği</p>
+                </div>
+                <div class="footer-links">
+                    <a href="mailto:iletisim@kaanipek.net.tr">iletisim@kaanipek.net.tr</a>
+                    <a href="/github" target="_blank" rel="noopener">GitHub</a>
+                    <a href="/linkedin" target="_blank" rel="noopener">LinkedIn</a>
+                </div>
+            </div>
+        </footer>
+    </main>
+
+    <!-- HABER DETAY PENCERESİ (MODAL) -->
+    <div id="newsModal" class="modal-backdrop" aria-hidden="true">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+            <div class="modal-header">
+                <span id="modalBadge" class="tag-pill">Hacker News</span>
+                <button type="button" id="closeModalBtn" class="modal-close" aria-label="Kapat">✕</button>
+            </div>
+            <h3 id="modalTitle" class="modal-title"></h3>
+            <div id="modalMeta" class="modal-meta"></div>
+            <div id="modalBody" class="modal-body"></div>
+            <div class="modal-footer">
+                <a id="modalExternalLink" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-primary"
+                   data-tr="Orijinal Habere Git ↗" data-en="Read Original Source ↗">
+                    Orijinal Habere Git ↗
+                </a>
+                <button type="button" id="modalDismissBtn" class="btn btn-secondary" data-tr="Kapat" data-en="Close">Kapat</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CV ÖNİZLEME PENCERESİ (MODAL) -->
+    <div id="cvModal" class="modal-backdrop" aria-hidden="true">
+        <div class="modal-card cv-modal-card" role="dialog" aria-modal="true" aria-labelledby="cvModalTitle">
+            <div class="modal-header">
+                <span class="tag-pill" id="cvModalTitle" data-tr="Özgeçmiş Önizleme (ATS PDF)" data-en="Resume Preview (ATS PDF)">Özgeçmiş Önizleme (ATS PDF)</span>
+                <button type="button" id="closeCvModalBtn" class="modal-close" aria-label="Kapat">✕</button>
+            </div>
+            <div class="cv-frame-wrapper">
+                <iframe id="cvPdfFrame" src="CV_TR.pdf" title="Veysel Kaan İpek CV"></iframe>
+            </div>
+            <div class="modal-footer">
+                <a id="cvDownloadLink" href="CV_TR.pdf" download class="btn btn-primary"
+                   data-tr="⬇ PDF Olarak İndir" data-en="⬇ Download PDF">
+                    ⬇ PDF Olarak İndir
+                </a>
+                <button type="button" id="dismissCvModalBtn" class="btn btn-secondary" data-tr="Kapat" data-en="Close">Kapat</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
