@@ -1308,3 +1308,28 @@ body.light-theme {
 @media (max-width: 600px) {
     .blog-share-row { align-items: flex-start; flex-direction: column; }
 }
+
+
+/* Ticket form feedback and pending state */
+.form-error {
+    margin: .25rem 0;
+    padding: .8rem 1rem;
+    border: 1px solid rgba(248, 113, 113, .35);
+    border-radius: 9px;
+    background: rgba(248, 113, 113, .08);
+    color: #fca5a5;
+    font-size: .9rem;
+    line-height: 1.5;
+}
+.form-error[hidden] { display: none; }
+.ticket-form button[disabled] {
+    cursor: wait;
+    opacity: .72;
+}
+.ticket-form button:focus-visible,
+.form-group input:focus-visible,
+.form-group select:focus-visible,
+.form-group textarea:focus-visible {
+    outline: 2px solid var(--accent-cyan);
+    outline-offset: 2px;
+}
