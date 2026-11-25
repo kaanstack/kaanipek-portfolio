@@ -244,7 +244,7 @@
       customCategory.disabled = categorySelect.value !== "custom";
       readTimeInput.value = post.readTime;
       summaryInput.value = post.summary;
-      contentInput.value = post.content.join("\\n\\n");
+      contentInput.value = post.content.join("\n\n");
       metaDescriptionInput.value = post.metaDescription || "";
       coverInput.value = "";
       updateCoverPreview(post.coverImage);
@@ -397,7 +397,7 @@
         const coverImage = await uploadCover(selectedFile);
         const payload = {
           title, slug: slugify(title), category, read_time: readTime,
-          excerpt: summary, content: content.join("\\n\\n"),
+          excerpt: summary, content: content.join("\n\n"),
           author: "Veysel Kaan İpek", cover_image: coverImage,
           meta_description: metaDescription
         };
