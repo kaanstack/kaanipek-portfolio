@@ -88,6 +88,7 @@ async function fetchTechRadarStories(force = false) {
         comments: item.descendants || 0,
         time: item.time || Math.floor(Date.now() / 1000),
         text: item.text || "",
+        kids: Array.isArray(item.kids) ? item.kids : [],
         category: classifyTechStory(item)
     }));
 
