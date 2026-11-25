@@ -53,10 +53,25 @@
 
   <main class="container blog-main">
     <section class="blog-header">
-      <h1>Teknik Notlar &amp; Blog</h1>
-      <p>Altyapı, yazılım geliştirme ve sahadaki mühendislik notları</p>
-      <div id="blog-filters" class="blog-filters"></div>
+      <div class="blog-eyebrow"><span class="blog-eyebrow-dot"></span> KİŞİSEL TEKNİK YAYIN</div>
+      <h1>Fikirlerden <span>uygulamaya.</span></h1>
+      <p>Yazılım, kurumsal sistemler ve teknoloji üzerine öğrendiklerimi, denediklerimi ve not aldıklarımı paylaşıyorum.</p>
+      <div class="blog-header-foot">
+        <span class="blog-header-index">VKI / NOTES — 001</span>
+        <span class="blog-header-caption">ÖĞREN · ÜRET · PAYLAŞ</span>
+      </div>
+      <div id="blog-filters" class="blog-filters" aria-label="Yazı kategorileri"></div>
     </section>
+
+    <section id="blog-discovery" class="blog-discovery" aria-label="Blog yazılarını keşfet">
+      <div class="blog-results-label"><span>YAYIN ARŞİVİ</span><span id="blog-post-count">Yazılar yükleniyor…</span></div>
+      <label class="blog-search-wrap" for="blog-search">
+        <span aria-hidden="true">⌕</span>
+        <input id="blog-search" type="search" placeholder="Yazılarda ara..." autocomplete="off">
+        <kbd>ARA</kbd>
+      </label>
+    </section>
+    <section id="blog-featured" class="blog-featured" aria-label="Öne çıkan yazı"></section>
 
     <section class="blog-tools" aria-label="Blog yönetimi">
       <div class="blog-toolbar">
