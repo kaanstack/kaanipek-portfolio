@@ -81,7 +81,8 @@
     }
     if (!story || !story.title) throw new Error("Haber bulunamadı veya yayından kaldırılmış.");
 
-    const translatedTitle = await translateToTurkish(story.title);\n    const title = translatedTitle !== safeText(story.title) ? translatedTitle : (story.displayTitle || translatedTitle);
+    const translatedTitle = await translateToTurkish(story.title);
+    const title = translatedTitle !== safeText(story.title) ? translatedTitle : (story.displayTitle || translatedTitle);
     const url = story.url || `https://news.ycombinator.com/item?id=${id}`;
     let domain = "news.ycombinator.com";
     try { domain = new URL(url).hostname.replace(/^www\./, ""); } catch {}
