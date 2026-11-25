@@ -304,6 +304,22 @@
                     <p id="ticketSuccessText"></p>
                     <button type="button" id="newTicketBtn" class="btn btn-secondary" data-tr="Yeni Ticket Oluştur" data-en="Create Another Ticket">Yeni Ticket Oluştur</button>
                 </div>
+
+                <div class="ticket-lookup">
+                    <div class="ticket-lookup-heading">
+                        <h3 data-tr="Mevcut Talebimi Sorgula" data-en="Track an Existing Ticket">Mevcut Talebimi Sorgula</h3>
+                        <p data-tr="Takip numaranızı girerek talebinizin güncel durumunu görüntüleyin." data-en="Enter your reference number to view the current status of your request.">Takip numaranızı girerek talebinizin güncel durumunu görüntüleyin.</p>
+                    </div>
+                    <form id="ticketLookupForm" class="ticket-lookup-form">
+                        <div class="form-group">
+                            <label for="ticketLookupNumber" data-tr="Takip Numarası" data-en="Reference Number">Takip Numarası</label>
+                            <input type="text" id="ticketLookupNumber" name="ticketNumber" required maxlength="48" autocomplete="off" placeholder="#VKI-2026-...">
+                        </div>
+                        <button type="submit" class="btn btn-secondary" data-tr="Durumu Sorgula" data-en="Check Status">Durumu Sorgula</button>
+                    </form>
+                    <p id="ticketLookupError" class="form-error" role="alert" hidden></p>
+                    <div id="ticketLookupResult" class="ticket-lookup-result" aria-live="polite" hidden></div>
+                </div>
             </div>
         </section>
 
