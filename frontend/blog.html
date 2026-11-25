@@ -5,6 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Blog — Veysel Kaan İpek</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+/* Supabase blog admin */
+#admin-login-panel { margin-top: 1rem; }
+.blog-card-admin-actions { display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.8rem; }
+.blog-card-admin-actions button { border:1px solid var(--border-color); border-radius:8px; padding:.4rem .7rem; background:var(--bg-subtle); color:var(--text-primary); cursor:pointer; }
+.blog-card-admin-actions button:hover { border-color:var(--accent-cyan); }
+.blog-admin-note { color:var(--text-secondary); font-size:.82rem; margin-top:.4rem; }
+</style>
 </head>
 <body>
   <header class="navbar">
@@ -42,11 +50,32 @@
       <div id="blog-filters" class="blog-filters"></div>
     </section>
 
-    <section class="blog-tools" aria-label="Blog yazısı işlemleri">
+    <section class="blog-tools" aria-label="Blog yönetimi">
       <div class="blog-toolbar">
-        <button type="button" id="newPostToggle" class="btn btn-primary" aria-expanded="false" aria-controls="blog-form-panel">✍ Yeni Yazı Ekle</button>
-        <button type="button" id="copyPostsJson" class="btn btn-secondary">JSON Çıktısını Kopyala</button>
+        <button type="button" id="adminLoginToggle" class="btn btn-secondary">Yönetici Girişi</button>
+        <button type="button" id="newPostToggle" class="btn btn-primary hidden" aria-expanded="false" aria-controls="blog-form-panel">✍ Yeni Yazı Ekle</button>
+        <button type="button" id="copyPostsJson" class="btn btn-secondary hidden">JSON Çıktısını Kopyala</button>
+        <button type="button" id="adminLogout" class="btn btn-secondary hidden">Çıkış Yap</button>
       </div>
+      <section id="admin-login-panel" class="blog-form-panel hidden" aria-label="Yönetici girişi">
+        <h2>Yönetici Girişi</h2>
+        <form id="admin-login-form" class="blog-form">
+          <div class="blog-form-grid">
+            <div class="form-group">
+              <label for="adminEmail">E-posta</label>
+              <input id="adminEmail" type="email" autocomplete="username" required>
+            </div>
+            <div class="form-group">
+              <label for="adminPassword">Şifre</label>
+              <input id="adminPassword" type="password" autocomplete="current-password" required>
+            </div>
+          </div>
+          <div class="blog-form-actions">
+            <button type="submit" class="btn btn-primary">Giriş Yap</button>
+            <button type="button" id="adminLoginCancel" class="btn btn-secondary">Vazgeç</button>
+          </div>
+        </form>
+      </section>
       <p id="blog-status" class="blog-status" role="status" aria-live="polite"></p>
     </section>
 
@@ -92,6 +121,9 @@
     <section id="blog-list" class="blog-list"></section>
   </main>
 
+  <script>window.__vkiSupabaseBlog = true;</script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="script.js"></script>
+  <script src="supabase-blog.js"></script>
 </body>
 </html>
