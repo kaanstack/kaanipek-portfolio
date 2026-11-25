@@ -189,7 +189,8 @@
       await supabase.auth.signOut();
       const expectedUid = normalizeUid(ADMIN_UID);
       const actualUid = normalizeUid(data.user?.id);
-      const diagnostic = "Giriş yapan ID: " + JSON.stringify(actualUid) + " (" + actualUid.length + " karakter); Kod ID: " + JSON.stringify(expectedUid) + " (" + expectedUid.length + " karakter); Eşitlik: " + String(actualUid === expectedUid) + ". Sayfayı Ctrl+Shift+R ile yenile."; 
+      const toCodes = (value) => Array.from(value, char => char.codePointAt(0).toString(16)).join(" ");
+      const diagnostic = "Giriş ID kodları: " + toCodes(actualUid) + " | Kod ID kodları: " + toCodes(expectedUid) + " | Eşitlik: " + String(actualUid === expectedUid) + ". Build: admin-uuid-debug-3."; 
       setMessage(loginMessage, diagnostic, true);
     } else {
       showDashboard(true);
