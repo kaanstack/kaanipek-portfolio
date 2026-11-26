@@ -1,5 +1,11 @@
 -- Blog editor roles and editorial approval workflow
 -- Run once in Supabase Dashboard > SQL Editor before inviting editors.
+-- To invite an editor:
+-- 1) Create their account in Supabase Dashboard > Authentication > Users.
+-- 2) Copy that user's UUID, then run:
+--    select public.grant_blog_editor('USER-UUID-HERE');
+-- To revoke access:
+--    select public.revoke_blog_editor('USER-UUID-HERE');
 
 -- Extend existing posts without changing the publication state of current articles.
 alter table public.posts
