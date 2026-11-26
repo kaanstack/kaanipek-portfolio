@@ -449,10 +449,89 @@
     if (viewId === "archiveView") loadTicketList(true);
     if (viewId === "versionsView") loadVersions();
     if (viewId === "accountsView") loadAccounts();
+    if (viewId === "editorsView") loadEditors();
     if (viewId === "blogView") {
       // Blog manager is mounted directly in this page and shares the admin session.
     }
   }
+
+ 
+  async function callEditorManager(action, payload = {}) {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) throw new Error("Yönetici oturumu bulunamadı. Yeniden giriş yap.");
+    const response = await fetch(SUPABASE_URL + "/functions/v1/manage-blog-editors", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + session.access_token,
+        "apikey": SUPABASE_PUBLISHABLE_KEY
+      },
+      body: JSON.stringify({ action, ...payload })
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.error || "Editör işlemi tamamlanamadı.");
+    return result;
+  }
+
+  async function loadEditors() {
+    const list = $("editorList");
+    setMessage($("editorsMessage"), "Editörler yükleniyor…");
+    list.replaceChildren();
+    try {
+      const result = await callEditorManager("list");
+      if (!result.editors?.length) {
+        list.append(makeElement("div", "card admin-empty", "Henüz editör eklenmemiş. Yukarıdan e-posta adresiyle davet gönderebilirsin."));
+      } else {
+        result.editors.forEach(editor => {
+          const card = makeElement("article", "card admin-account-card");
+          const details = makeElement("div", "admin-account-details");
+          details.append(
+            makeElement("h3", "", editor.email || "E-posta bilgisi bulunamadı"),
+            makeElement("p", "admin-muted", "Durum: " + (editor.confirmed ? "E-posta doğrulandı" : "Davet bekliyor"))
+          );
+          const revoke = makeElement("button", "btn btn-danger admin-small-button", "Yetkiyi kaldır");
+          revoke.type = "button";
+          revoke.addEventListener("click", async () => {
+            if (!window.confirm((editor.email || "Bu kullanıcının") + " editör yetkisi kaldırılsın mı?")) return;
+            revoke.disabled = true;
+            try {
+              await callEditorManager("revoke", { userId: editor.userId });
+              await loadEditors();
+              setMessage($("editorsMessage"), "Editör yetkisi kaldırıldı.");
+            } catch (error) {
+              setMessage($("editorsMessage"), error.message, true);
+              revoke.disabled = false;
+            }
+          });
+          card.append(details, revoke);
+          list.append(card);
+        });
+      }
+      setMessage($("editorsMessage"), result.editors?.length ? result.editors.length + " editör listelendi." : "Editör listesi boş.");
+    } catch (error) {
+      setMessage($("editorsMessage"), "Editörler yüklenemedi: " + error.message, true);
+    }
+  }
+
+  $("editorInviteForm").addEventListener("submit", async event => {
+    event.preventDefault();
+    const email = $("editorInviteEmail").value.trim().toLowerCase();
+    const button = $("editorInviteButton");
+    button.disabled = true;
+    button.textContent = "Davet gönderiliyor…";
+    setMessage($("editorsMessage"), "");
+    try {
+      const result = await callEditorManager("invite", { email });
+      $("editorInviteForm").reset();
+      setMessage($("editorsMessage"), result.message || "Davet e-postası gönderildi.");
+      await loadEditors();
+    } catch (error) {
+      setMessage($("editorsMessage"), "Davet gönderilemedi: " + error.message, true);
+    } finally {
+      button.disabled = false;
+      button.textContent = "Davet gönder";
+    }
+  });
 
   async function loadVersions() {
     setMessage($("versionsMessage"), "Sürümler yükleniyor…");
