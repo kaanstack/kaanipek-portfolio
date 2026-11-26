@@ -364,7 +364,7 @@
     };
 
     const results = await Promise.allSettled([
-      countQuery("tickets", q => q.is("archived_at", null).neq("status", "closed")),
+      countQuery("tickets", q => q.is("archived_at", null)),
       countQuery("posts"),
       countQuery("account_inventory"),
       countQuery("site_versions")
