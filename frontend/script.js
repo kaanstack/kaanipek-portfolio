@@ -3,17 +3,17 @@ let currentLang = 'tr';
 function hasUnsafeHeadlineLanguage(value) {
     const text = String(value || "").toLocaleLowerCase("tr-TR");
     const blockedTerms = [
-        /\\bfuck(?:ing|ed|er|ers)?\\b/i,
-        /\\bshit(?:ty|ting|s)?\\b/i,
-        /\\basshole\\b/i,
-        /\\bbitch(?:es)?\\b/i,
-        /\\bbastard(?:s)?\\b/i,
-        /\\bdamn(?:ed)?\\b/i,
-        /\\bhassiktir\\b/i,
-        /\\bsiktir\\b/i,
-        /\\bamk\\b/i,
-        /\\boruspu\\b/i,
-        /\\bkahpe\\b/i
+        /\bfuck(?:ing|ed|er|ers)?\b/i,
+        /\bshit(?:ty|ting|s)?\b/i,
+        /\basshole\b/i,
+        /\bbitch(?:es)?\b/i,
+        /\bbastard(?:s)?\b/i,
+        /\bdamn(?:ed)?\b/i,
+        /\bhassiktir\b/i,
+        /\bsiktir\b/i,
+        /\bamk\b/i,
+        /\boruspu\b/i,
+        /\bkahpe\b/i
     ];
     return blockedTerms.some((pattern) => pattern.test(text));
 }
@@ -52,12 +52,12 @@ async function translateToTurkish(text) {
         const status = String(data?.responseStatus || "");
         const isQuotaOrRateLimit =
             status === "429" ||
-            /mymemory\\s+warning/i.test(translated) ||
+            /mymemory\s+warning/i.test(translated) ||
             /used all available free translations/i.test(translated) ||
             /next available in/i.test(translated);
 
         // Küfür, anlamsız tekrar veya servis uyarısı içeren çeviriyi reddet.
-        const repeatedPhrase = /(.{3,45})(?:\\s+\\1){2,}/i.test(translated);
+        const repeatedPhrase = /(.{3,45})(?:\s+\\1){2,}/i.test(translated);
         if (!translated || isQuotaOrRateLimit || hasUnsafeHeadlineLanguage(translated) || repeatedPhrase) {
             return text;
         }
@@ -162,9 +162,9 @@ async function fetchTechRadarStories(force = false) {
 
 function sanitizeNewsHeadline(value) {
     const cleaned = String(value || "")
-        .replace(/\\b(?:hass?iktir|siktir|fuck(?:ing)?|shit|asshole|bitch)\\b[\\s,!.:;—-]*/gi, "")
-        .replace(/^[\\s,!.:;—-]+/, "")
-        .replace(/\\s{2,}/g, " ")
+        .replace(/\b(?:hass?iktir|siktir|fuck(?:ing)?|shit|asshole|bitch)\b[\s,!.:;—-]*/gi, "")
+        .replace(/^[\s,!.:;—-]+/, "")
+        .replace(/\s{2,}/g, " ")
         .trim();
     return cleaned || "Uygunsuz başlık";
 }
