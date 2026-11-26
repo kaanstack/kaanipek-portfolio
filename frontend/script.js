@@ -1,40 +1,70 @@
 let currentLang = 'tr';
 
+function hasUnsafeHeadlineLanguage(value) {
+    const text = String(value || "").toLocaleLowerCase("tr-TR");
+    const blockedTerms = [
+        /\\bfuck(?:ing|ed|er|ers)?\\b/i,
+        /\\bshit(?:ty|ting|s)?\\b/i,
+        /\\basshole\\b/i,
+        /\\bbitch(?:es)?\\b/i,
+        /\\bbastard(?:s)?\\b/i,
+        /\\bdamn(?:ed)?\\b/i,
+        /\\bhassiktir\\b/i,
+        /\\bsiktir\\b/i,
+        /\\bamk\\b/i,
+        /\\boruspu\\b/i,
+        /\\bkahpe\\b/i
+    ];
+    return blockedTerms.some((pattern) => pattern.test(text));
+}
+
 async function translateToTurkish(text) {
     if (!text) return "";
 
+    // Kaba kaynak başlıklarını çevirmeye çalışma; orijinal başlık daha güvenli olabilir.
+    if (hasUnsafeHeadlineLanguage(text)) return text;
+
     const cacheKey = `vki_hn_tr_${text}`;
-    const cached = localStorage.getItem(cacheKey);
-    if (cached) return cached;
+    try {
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+            // Daha önce kaydedilmiş uygunsuz/bozuk çeviriyi kullanma.
+            if (!hasUnsafeHeadlineLanguage(cached)) return cached;
+            localStorage.removeItem(cacheKey);
+        }
+    } catch { /* storage may be unavailable */ }
 
     try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 3500);
-
-        const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|tr&de=iletisim@kaanipek.net.tr`;
-        const response = await fetch(url, { signal: controller.signal });
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-            return text;
+        let response;
+        try {
+            const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|tr&de=iletisim@kaanipek.net.tr`;
+            response = await fetch(url, { signal: controller.signal });
+        } finally {
+            clearTimeout(timeoutId);
         }
+
+        if (!response.ok) return text;
 
         const data = await response.json();
         const translated = data?.responseData?.translatedText || "";
         const status = String(data?.responseStatus || "");
         const isQuotaOrRateLimit =
             status === "429" ||
-            /mymemory\s+warning/i.test(translated) ||
+            /mymemory\\s+warning/i.test(translated) ||
             /used all available free translations/i.test(translated) ||
             /next available in/i.test(translated);
 
-        if (!translated || isQuotaOrRateLimit) {
+        // Küfür, anlamsız tekrar veya servis uyarısı içeren çeviriyi reddet.
+        const repeatedPhrase = /(.{3,45})(?:\\s+\\1){2,}/i.test(translated);
+        if (!translated || isQuotaOrRateLimit || hasUnsafeHeadlineLanguage(translated) || repeatedPhrase) {
             return text;
         }
 
-        localStorage.setItem(cacheKey, translated);
+        try { localStorage.setItem(cacheKey, translated); } catch { /* storage may be unavailable */ }
         return translated;
-    } catch (error) {
+    } catch {
         return text;
     }
 }
