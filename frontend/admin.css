@@ -112,3 +112,25 @@
 .admin-blog-frame-wrap { width:100%; overflow:hidden; border:1px solid var(--border-color); border-radius:16px; background:#070a11; }
 .admin-blog-frame-wrap iframe { display:block; width:100%; height: min(1500px, 78vh); min-height:900px; border:0; background:#070a11; }
 @media(max-width:760px) { .admin-blog-frame-wrap iframe { height:78vh; min-height:820px; } }
+
+
+/* Account inventory: metadata only, never passwords or recovery secrets. */
+.admin-account-safety { padding:1rem 1.1rem; margin:0 0 1rem; border:1px solid rgba(34,211,238,.22); background:rgba(34,211,238,.045); }
+.admin-account-safety strong { display:block; margin-bottom:.35rem; color:var(--text-primary); }
+.admin-account-safety p { margin:0; color:var(--text-secondary); font-size:.86rem; line-height:1.6; }
+.admin-account-form { display:grid; gap:.85rem; padding:1.2rem; margin-bottom:1rem; }
+.admin-account-form h3 { margin:0; }
+.admin-account-fields { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.8rem; }
+.admin-account-fields label,.admin-account-notes-label { display:grid; gap:.4rem; color:var(--text-secondary); font-size:.84rem; }
+.admin-account-form input,.admin-account-form textarea { width:100%; min-width:0; background:#0d1422; color:#e8eef8; color-scheme:dark; border:1px solid var(--border-color); border-radius:10px; padding:.7rem .8rem; font:inherit; }
+.admin-account-form textarea { resize:vertical; }
+.admin-account-form input:focus,.admin-account-form textarea:focus { outline:2px solid var(--accent-cyan); outline-offset:2px; }
+.admin-account-form-actions { display:flex; flex-wrap:wrap; gap:.55rem; }
+.admin-account-list { display:grid; gap:.8rem; }
+.admin-account-card { padding:1.1rem 1.2rem; }
+.admin-account-card-head { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
+.admin-account-card h3 { margin:0 0 .25rem; font-size:1.05rem; }
+.admin-account-username { margin:0; color:var(--text-secondary); font-size:.88rem; overflow-wrap:anywhere; }
+.admin-account-notes { margin:.85rem 0 0; color:var(--text-secondary); font-size:.88rem; white-space:pre-wrap; overflow-wrap:anywhere; }
+.admin-account-actions { display:flex; gap:.5rem; padding-top:.8rem; margin-top:.8rem; border-top:1px solid var(--border-color); }
+@media(max-width:760px) { .admin-account-fields { grid-template-columns:1fr; } .admin-account-card-head { align-items:stretch; } .admin-account-card-head > a { align-self:flex-start; } }
