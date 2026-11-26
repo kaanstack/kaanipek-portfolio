@@ -235,6 +235,10 @@
     if (viewId === "ticketsView") loadTicketList(false);
     if (viewId === "archiveView") loadTicketList(true);
     if (viewId === "versionsView") loadVersions();
+    if (viewId === "blogView") {
+      const frame = $("blogAdminFrame");
+      if (frame && !frame.dataset.loaded) frame.dataset.loaded = "true";
+    }
   }
 
   async function loadVersions() {
@@ -374,7 +378,13 @@
   });
   $("refreshButton").addEventListener("click", async () => {
     try {
-      await Promise.all([loadStats(), activeView === "versionsView" ? loadVersions() : loadTickets()]);
+      if (activeView === "blogView") {
+        const frame = $("blogAdminFrame");
+        if (frame) frame.contentWindow.location.reload();
+        await loadStats();
+      } else {
+        await Promise.all([loadStats(), activeView === "versionsView" ? loadVersions() : loadTickets()]);
+      }
     } catch (err) {
       setMessage($(activeView === "archiveView" ? "archiveMessage" : activeView === "versionsView" ? "versionsMessage" : "ticketsMessage"), err.message, true);
     }
