@@ -22,7 +22,7 @@
 
   const categoryOf = (story) => {
     const text = `${story.title || ""} ${story.text || ""} ${story.url || ""}`.toLowerCase();
-    if (/openai|chatgpt|claude|anthropic|gemini|llm|artificial intelligence|\\bai\\b|machine learning|deep learning|neural|yapay zek/.test(text)) return "Yapay Zekâ";
+    if (/openai|chatgpt|claude|anthropic|gemini|llm|artificial intelligence|\bai\b|machine learning|deep learning|neural|yapay zek/.test(text)) return "Yapay Zekâ";
     if (/security|cyber|vulnerability|zero.day|malware|ransomware|exploit|cve-|siber güvenlik/.test(text)) return "Siber Güvenlik";
     if (/gpu|cpu|processor|chip|semiconductor|nvidia|amd|intel|arm |hardware|donanım/.test(text)) return "Donanım";
     if (/aws|azure|google cloud|kubernetes|docker|devops|cloud|serverless|infrastructure|linux/.test(text)) return "Bulut & DevOps";
@@ -32,9 +32,9 @@
 
   function sanitizeNewsHeadline(value) {
     const cleaned = String(value || "")
-      .replace(/\\b(?:hass?iktir|siktir|fuck(?:ing)?|shit|asshole|bitch)\\b[\\s,!.:;—-]*/gi, "")
-      .replace(/^[\\s,!.:;—-]+/, "")
-      .replace(/\\s{2,}/g, " ")
+      .replace(/\b(?:hass?iktir|siktir|fuck(?:ing)?|shit|asshole|bitch)\b[\s,!.:;—-]*/gi, "")
+      .replace(/^[\s,!.:;—-]+/, "")
+      .replace(/\s{2,}/g, " ")
       .trim();
     return cleaned || "Uygunsuz başlık";
   }
