@@ -43,6 +43,19 @@
     logoutButton.classList.toggle("hidden", !visible);
   }
 
+  async function routeAuthorizedSession(session) {
+    if (!session?.user) return "none";
+    if (session.user.id === ADMIN_UID) return "admin";
+    const { data, error } = await supabase.from("blog_user_roles")
+      .select("role").eq("user_id", session.user.id).maybeSingle();
+    if (!error && data?.role === "editor") {
+      window.location.replace("editor.html");
+      return "editor";
+    }
+    await supabase.auth.signOut();
+    return "none";
+  }
+
   function formatDate(value) {
     if (!value) return "—";
     return new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
@@ -556,15 +569,17 @@
       password: $("adminPassword").value
     });
     if (error) setMessage(loginMessage, "Giriş başarısız. E-posta veya şifreni kontrol et.", true);
-    else if (data.user?.id !== ADMIN_UID) {
-      await supabase.auth.signOut();
-      setMessage(loginMessage, "Bu hesap yönetici olarak yetkili değil.", true);
-    } else {
-      showDashboard(true);
-      try {
-        await Promise.all([loadStats(), loadOverview()]);
-      } catch (err) {
-        setMessage($("ticketsMessage"), "Panel verileri yüklenemedi: " + err.message, true);
+    else {
+      const access = await routeAuthorizedSession(data.session);
+      if (access === "admin") {
+        showDashboard(true);
+        try {
+          await Promise.all([loadStats(), loadOverview()]);
+        } catch (err) {
+          setMessage($("ticketsMessage"), "Panel verileri yüklenemedi: " + err.message, true);
+        }
+      } else if (access === "none") {
+        setMessage(loginMessage, "Bu hesap için blog editör yetkisi bulunamadı.", true);
       }
     }
     button.disabled = false;
@@ -610,11 +625,10 @@
   supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
   supabase.auth.getSession().then(async ({ data, error }) => {
     if (error) throw error;
-    if (data.session?.user?.id === ADMIN_UID) {
+    const access = await routeAuthorizedSession(data.session);
+    if (access === "admin") {
       showDashboard(true);
       await Promise.all([loadStats(), loadOverview()]);
-    } else if (data.session) {
-      await supabase.auth.signOut();
     }
   }).catch(error => setMessage(loginMessage, "Oturum kontrol edilemedi: " + error.message, true));
 })();
