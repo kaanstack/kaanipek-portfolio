@@ -30,6 +30,15 @@
     return "Diğer";
   };
 
+  function sanitizeNewsHeadline(value) {
+    const cleaned = String(value || "")
+      .replace(/\\b(?:hass?iktir|siktir|fuck(?:ing)?|shit|asshole|bitch)\\b[\\s,!.:;—-]*/gi, "")
+      .replace(/^[\\s,!.:;—-]+/, "")
+      .replace(/\\s{2,}/g, " ")
+      .trim();
+    return cleaned || "Uygunsuz başlık";
+  }
+
   const addText = (parent, tag, value, className) => {
     const node = document.createElement(tag);
     if (className) node.className = className;
@@ -100,7 +109,7 @@
     if (!story || !story.title) throw new Error("Haber bulunamadı veya yayından kaldırılmış.");
 
     const translatedTitle = await translateToTurkish(story.title);
-    const title = translatedTitle !== safeText(story.title) ? translatedTitle : (story.displayTitle || translatedTitle);
+    const title = sanitizeNewsHeadline(translatedTitle !== safeText(story.title) ? translatedTitle : (story.displayTitle || translatedTitle));
     const url = story.url || `https://news.ycombinator.com/item?id=${id}`;
     let domain = "news.ycombinator.com";
     try { domain = new URL(url).hostname.replace(/^www\./, ""); } catch {}
