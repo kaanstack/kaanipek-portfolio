@@ -289,7 +289,7 @@
           title.textContent = post.title;
           const meta = document.createElement("p");
           const statusLabel = ({ draft: "Taslak", pending: "Onay bekliyor", published: "Yayında", changes_requested: "Düzenleme istendi" })[post.status] || "Yayında";
-          meta.textContent = [post.category, post.date, statusLabel].filter(Boolean).join(" · ");
+          meta.textContent = [post.category, post.date, statusLabel, (isEditor && post.review_note) ? "Not: " + post.review_note : ""].filter(Boolean).join(" · ");
           info.append(title, meta);
           const actions = document.createElement("div");
           actions.className = "admin-blog-post-actions";
@@ -307,7 +307,12 @@
             publish.className = "btn btn-primary admin-small-button";
             publish.textContent = "Yayınla";
             publish.addEventListener("click", () => publishPost(post));
-            actions.append(publish);
+            const revise = document.createElement("button");
+            revise.type = "button";
+            revise.className = "btn btn-secondary admin-small-button";
+            revise.textContent = "Düzenleme iste";
+            revise.addEventListener("click", () => requestChanges(post));
+            actions.append(publish, revise);
           }
           if (isAdmin) {
             const remove = document.createElement("button");
@@ -427,6 +432,18 @@
     }
 
     window.addEventListener("vki:refresh-blog", () => loadPosts().catch(error => setStatus("Blog yenilenemedi: " + error.message, true)));
+
+    async function requestChanges(post) {
+      if (!isAdmin) return;
+      const note = prompt("Editöre iletilecek düzenleme notu:", post.review_note || "");
+      if (note === null) return;
+      if (!note.trim()) return setStatus("Düzenleme notu boş olamaz.", true);
+      const {error} = await supabaseClient.from("posts")
+        .update({ status: "changes_requested", review_note: note.trim() }).eq("id", post.id);
+      if (error) { setStatus("Düzenleme isteği kaydedilemedi: " + error.message, true); return; }
+      await loadPosts();
+      setStatus("Düzenleme isteği editöre iletildi.");
+    }
 
     async function publishPost(post) {
       if (!isAdmin || !confirm("“" + post.title + "” yazısını yayımlamak istiyor musun?")) return;
