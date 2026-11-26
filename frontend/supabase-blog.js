@@ -261,7 +261,7 @@
       const featuredPost = categoryPosts[0] || null;
       renderFeatured(featuredPost);
       const filtered = categoryPosts.filter((p, index) => {
-        if (!query && activeCategory === "Tümü" && index === 0) return false;
+        if (!embeddedAdminMode && !query && activeCategory === "Tümü" && index === 0) return false;
         const haystack = [p.title, p.summary, p.category, p.content.join(" ")].join(" ").toLocaleLowerCase("tr-TR");
         return !query || haystack.includes(query);
       });
