@@ -160,6 +160,15 @@ async function fetchTechRadarStories(force = false) {
     return value;
 }
 
+function sanitizeNewsHeadline(value) {
+    const cleaned = String(value || "")
+        .replace(/\\b(?:hass?iktir|siktir|fuck(?:ing)?|shit|asshole|bitch)\\b[\\s,!.:;—-]*/gi, "")
+        .replace(/^[\\s,!.:;—-]+/, "")
+        .replace(/\\s{2,}/g, " ")
+        .trim();
+    return cleaned || "Uygunsuz başlık";
+}
+
 function renderTechRadarStories(container, stories, activeCategory = "Tümü", visibleLimit = 5) {
     const visible = activeCategory === "Tümü" ? stories : stories.filter((story) => story.category === activeCategory);
     const loadMoreButton = document.getElementById("techRadarLoadMore");
@@ -178,7 +187,7 @@ function renderTechRadarStories(container, stories, activeCategory = "Tümü", v
                     <span class="news-category">${escapeHtml(story.category)}</span>
                     <span class="news-card-domain">${escapeHtml(story.domain)}</span>
                 </div>
-                <h3 class="news-card-title">${index + 1}. ${escapeHtml(story.displayTitle || story.title)}</h3>
+                <h3 class="news-card-title">${index + 1}. ${escapeHtml(sanitizeNewsHeadline(story.displayTitle || story.title))}</h3>
                 <div class="news-card-meta">
                     <span>▲ ${story.score} puan</span>
                     <span>💬 ${story.comments} yorum</span>
