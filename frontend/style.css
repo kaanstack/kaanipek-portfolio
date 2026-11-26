@@ -1773,3 +1773,34 @@ body.light-theme {
 @media (prefers-reduced-motion: reduce) {
     .hero-actions .blog-cta, .blog-cta-arrow, .hero-actions .blog-cta::before { transition: none; }
 }
+
+
+/* BLOG META — clearer publication and reading information */
+.blog-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .45rem .8rem;
+  color: var(--text-secondary);
+  font-size: .74rem;
+  line-height: 1.5;
+}
+.blog-meta > span { display: inline-flex; align-items: center; gap: .28rem; }
+.blog-meta .blog-meta-category {
+  color: var(--accent-cyan);
+  font-weight: 750;
+  letter-spacing: .025em;
+}
+.blog-meta .blog-meta-date,
+.blog-meta .blog-meta-reading { color: var(--text-secondary); }
+.blog-meta .blog-meta-date > span,
+.blog-meta .blog-meta-reading > span {
+  color: var(--accent-cyan);
+  font-weight: 800;
+}
+.blog-featured-copy .blog-meta { gap: .45rem .9rem; margin-bottom: .85rem; }
+.blog-detail > .blog-meta { margin-bottom: .75rem; font-size: .8rem; }
+.blog-card-body .blog-meta { min-height: 1.35rem; }
+@media (max-width: 520px) {
+  .blog-meta { gap: .35rem .65rem; font-size: .7rem; }
+}
