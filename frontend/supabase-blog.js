@@ -63,6 +63,25 @@
         return url.protocol === "https:" ? url.href : "";
       } catch { return ""; }
     };
+
+    function attachCoverFallback(image, variant) {
+      if (!image) return;
+      image.addEventListener("error", () => {
+        const fallback = document.createElement("div");
+        if (variant === "detail") {
+          fallback.className = "blog-detail-cover-fallback";
+          fallback.textContent = "VKI / NOTES";
+        } else {
+          fallback.className = variant === "featured" ? "blog-art-mark" : "blog-card-placeholder";
+          fallback.append(document.createTextNode("VKI"));
+          const suffix = document.createElement("span");
+          suffix.textContent = " / NOTES";
+          fallback.append(suffix);
+          image.parentElement?.classList.remove("has-cover");
+        }
+        image.replaceWith(fallback);
+      }, { once: true });
+    }
     const normalize = (p) => ({
       ...p,
       slug: p.slug || slugify(p.title || ""),
@@ -184,6 +203,7 @@
           <button type="button" id="copy-post-link">Bağlantıyı Kopyala</button>
         </div>
         <div class="blog-detail-content">${paragraphs}</div>`;
+      attachCoverFallback(detailEl.querySelector(".blog-detail-cover"), "detail");
       detailEl.classList.remove("hidden");
       listEl.classList.add("hidden");
       filtersEl?.classList.add("hidden");
@@ -222,6 +242,7 @@
             <span class="blog-art-index">FIELD NOTES / 01</span>
           </div>
         </article>`;
+      attachCoverFallback(featuredEl.querySelector(".blog-featured-art img"), "featured");
       featuredEl.querySelector(".blog-featured-link")?.addEventListener("click", () => openPost(post));
     }
 
@@ -261,6 +282,7 @@
             <button type="button" class="read-btn">Yazıyı oku <span aria-hidden="true">↗</span></button>
             ${isAdmin && post.id ? '<div class="blog-card-admin-actions"><button type="button" data-action="edit">Düzenle</button><button type="button" data-action="delete">Sil</button></div>' : ""}
           </div>`;
+        attachCoverFallback(card.querySelector(".blog-card-cover"), "card");
         card.querySelector(".read-btn").addEventListener("click", () => openPost(post));
         if (isAdmin && post.id) {
           card.querySelector('[data-action="edit"]')?.addEventListener("click", () => beginEdit(post));
