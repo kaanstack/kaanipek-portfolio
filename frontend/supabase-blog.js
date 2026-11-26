@@ -46,6 +46,8 @@
     let editingId = null;
     let editingPost = null;
     let isAdmin = false;
+    let isEditor = false;
+    let currentUserId = null;
     let currentObjectUrl = null;
 
     const setStatus = (message, isError = false) => {
@@ -147,12 +149,15 @@
       setCanonical(absolutePostUrl(post));
     }
     const updateAdminUI = () => {
-      [addButton, copyButton].forEach(el => el?.classList.toggle("hidden", !isAdmin));
-      logoutButton?.classList.toggle("hidden", !isAdmin || embeddedAdminMode);
-      if (!isAdmin) {
+      const canEditBlog = isAdmin || isEditor;
+      addButton?.classList.toggle("hidden", !canEditBlog);
+      copyButton?.classList.toggle("hidden", !isAdmin);
+      logoutButton?.classList.toggle("hidden", !canEditBlog || embeddedAdminMode);
+      if (!canEditBlog) {
         formPanel?.classList.add("hidden");
         addButton?.setAttribute("aria-expanded", "false");
       }
+      if (isEditor && addButton) addButton.textContent = "+ Yeni yazı hazırla";
     };
 
     function showListRoute(updateHistory = false) {
@@ -283,21 +288,35 @@
           const title = document.createElement("h3");
           title.textContent = post.title;
           const meta = document.createElement("p");
-          meta.textContent = [post.category, post.date].filter(Boolean).join(" · ");
+          const statusLabel = ({ draft: "Taslak", pending: "Onay bekliyor", published: "Yayında", changes_requested: "Düzenleme istendi" })[post.status] || "Yayında";
+          meta.textContent = [post.category, post.date, statusLabel].filter(Boolean).join(" · ");
           info.append(title, meta);
-          const edit = document.createElement("button");
-          edit.type = "button";
-          edit.className = "btn btn-secondary admin-small-button";
-          edit.textContent = "Düzenle";
-          edit.addEventListener("click", () => beginEdit(post));
-          const remove = document.createElement("button");
-          remove.type = "button";
-          remove.className = "btn btn-danger admin-small-button";
-          remove.textContent = "Sil";
-          remove.addEventListener("click", () => deletePost(post));
           const actions = document.createElement("div");
           actions.className = "admin-blog-post-actions";
-          actions.append(edit, remove);
+          if (isAdmin || ["draft", "pending", "changes_requested"].includes(post.status)) {
+            const edit = document.createElement("button");
+            edit.type = "button";
+            edit.className = "btn btn-secondary admin-small-button";
+            edit.textContent = "Düzenle";
+            edit.addEventListener("click", () => beginEdit(post));
+            actions.append(edit);
+          }
+          if (isAdmin && post.status === "pending") {
+            const publish = document.createElement("button");
+            publish.type = "button";
+            publish.className = "btn btn-primary admin-small-button";
+            publish.textContent = "Yayınla";
+            publish.addEventListener("click", () => publishPost(post));
+            actions.append(publish);
+          }
+          if (isAdmin) {
+            const remove = document.createElement("button");
+            remove.type = "button";
+            remove.className = "btn btn-danger admin-small-button";
+            remove.textContent = "Sil";
+            remove.addEventListener("click", () => deletePost(post));
+            actions.append(remove);
+          }
           row.append(info, actions);
           listEl.appendChild(row);
           return;
@@ -391,7 +410,7 @@
       const {data,error} = await supabaseClient.from("posts").select("*").order("created_at",{ascending:false});
       if (error) throw error;
       databasePosts = data || [];
-      posts = sortPosts(databasePosts);
+      posts = sortPosts(isEditor ? databasePosts.filter(post => post.author_id === currentUserId) : databasePosts);
       renderFilters();
       renderList();
       const routeSlug = decodeURIComponent(location.pathname.match(/^\/blog\/([^/]+)\/?$/)?.[1] || new URLSearchParams(location.search).get("slug") || "");
@@ -409,7 +428,16 @@
 
     window.addEventListener("vki:refresh-blog", () => loadPosts().catch(error => setStatus("Blog yenilenemedi: " + error.message, true)));
 
+    async function publishPost(post) {
+      if (!isAdmin || !confirm("“" + post.title + "” yazısını yayımlamak istiyor musun?")) return;
+      const {error} = await supabaseClient.from("posts").update({ status: "published", review_note: null }).eq("id", post.id);
+      if (error) { setStatus("Yazı yayımlanamadı: " + error.message, true); return; }
+      await loadPosts();
+      setStatus("Yazı başarıyla yayımlandı.");
+    }
+
     async function deletePost(post) {
+      if (!isAdmin) return;
       if (!confirm("“" + post.title + "” yazısını silmek istediğine emin misin?")) return;
       const {error} = await supabaseClient.from("posts").delete().eq("id",post.id);
       if (error) { setStatus("Yazı silinemedi: " + error.message,true); return; }
@@ -424,6 +452,8 @@
     logoutButton?.addEventListener("click", async () => {
       await supabaseClient.auth.signOut();
       isAdmin = false;
+      isEditor = false;
+      currentUserId = null;
       updateAdminUI();
       resetEditor();
       setStatus("Oturum kapatıldı.");
@@ -465,7 +495,7 @@
 
     postForm?.addEventListener("submit", async (event) => {
       event.preventDefault();
-      if (!isAdmin || !supabaseClient) return setStatus("Yazı kaydetmek için yönetici girişi yapmalısın.",true);
+      if ((!isAdmin && !isEditor) || !supabaseClient) return setStatus("Yazı kaydetmek için yetkili giriş yapmalısın.",true);
       const title = titleInput.value.trim();
       const category = categorySelect.value === "custom" ? customCategory.value.trim() : categorySelect.value;
       const readTime = readTimeInput.value.trim();
@@ -487,18 +517,19 @@
           title, slug: slugify(title), category, read_time: readTime,
           excerpt: summary, content: content.join("\n\n"),
           author: "Veysel Kaan İpek", cover_image: coverImage || null,
-          meta_description: metaDescription
+          meta_description: metaDescription,
+          ...(isEditor ? { author_id: currentUserId, status: "pending", submitted_at: new Date().toISOString() } : {})
         };
         const query = editingId
           ? supabaseClient.from("posts").update(payload).eq("id",editingId)
-          : supabaseClient.from("posts").insert(payload);
+          : supabaseClient.from("posts").insert({ ...payload, ...(isAdmin ? { status: "published" } : {}) });
         const {error} = await query;
         if (error) throw error;
         formPanel.classList.add("hidden");
         addButton.setAttribute("aria-expanded","false");
         resetEditor();
         await loadPosts();
-        setStatus(wasEditing ? "Yazı güncellendi." : "Yazı Supabase'e kaydedildi.");
+        setStatus(isEditor ? "Yazın onaya gönderildi. Onaylanana kadar sitede yayımlanmayacak." : (wasEditing ? "Yazı güncellendi." : "Yazı yayımlandı."));
       } catch (error) {
         setStatus("Yazı kaydedilemedi: " + (error.message || "Bilinmeyen hata"),true);
       } finally {
@@ -524,8 +555,14 @@
     if (SUPABASE_URL.startsWith("https://") && SUPABASE_ANON_KEY && window.supabase?.createClient) {
       supabaseClient = window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
       const {data:{session}} = await supabaseClient.auth.getSession();
-      isAdmin = adminMode && session?.user?.id === ADMIN_UID;
-      if (adminMode && session && session.user?.id !== ADMIN_UID) await supabaseClient.auth.signOut();
+      currentUserId = session?.user?.id || null;
+      isAdmin = adminMode && currentUserId === ADMIN_UID;
+      if (adminMode && session && !isAdmin) {
+        const {data:roleData, error:roleError} = await supabaseClient.from("blog_user_roles")
+          .select("role").eq("user_id", currentUserId).maybeSingle();
+        isEditor = !roleError && roleData?.role === "editor";
+        if (!isEditor) await supabaseClient.auth.signOut();
+      }
       updateAdminUI();
       try {
         await loadPosts();
