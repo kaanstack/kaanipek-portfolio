@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#070a11">
+  <title>Editör Hesabı | KaaniPek</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body class="admin-page">
+  <main class="admin-shell">
+    <section class="admin-login card">
+      <span class="admin-eyebrow">EDITOR ACCESS</span>
+      <h1>Hesabını tamamla</h1>
+      <p class="admin-muted">Editör hesabın için yeni bir şifre belirle.</p>
+      <form id="invitePasswordForm" class="admin-form">
+        <label for="newPassword">Yeni şifre</label>
+        <input id="newPassword" type="password" autocomplete="new-password" minlength="10" required>
+        <label for="confirmPassword">Yeni şifreyi tekrar gir</label>
+        <input id="confirmPassword" type="password" autocomplete="new-password" minlength="10" required>
+        <button class="btn btn-primary" id="savePasswordButton" type="submit">Şifremi belirle</button>
+      </form>
+      <p id="inviteMessage" class="admin-message" role="status" aria-live="polite"></p>
+    </section>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="invite-accept.js"></script>
+</body>
+</html>
