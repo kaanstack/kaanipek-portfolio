@@ -54,6 +54,7 @@
         <button class="admin-tab" type="button" data-view="archiveView">Arşiv</button>
         <button class="admin-tab" type="button" data-view="versionsView">Sürümler</button>
         <button class="admin-tab" type="button" data-view="blogView">Blog yönetimi</button>
+        <button class="admin-tab" type="button" data-view="editorsView">Editör yönetimi</button>
         <button class="admin-tab" type="button" data-view="accountsView">Hesaplarım</button>
       </nav>
 
@@ -187,6 +188,20 @@
           <div id="blog-detail" class="hidden"></div>
           <div id="blog-list" class="admin-blog-list"></div>
         </div>
+      </section>
+      <section id="editorsView" class="admin-panel-view hidden">
+        <div class="admin-section-heading">
+          <div><h2>Editör yönetimi</h2><p class="admin-muted">E-posta adresine davet gönder, editörleri görüntüle ve erişimlerini yönet.</p></div>
+        </div>
+        <form id="editorInviteForm" class="card admin-account-form">
+          <h3>Yeni editör davet et</h3>
+          <div class="admin-account-fields">
+            <label>Editörün e-posta adresi<input id="editorInviteEmail" type="email" autocomplete="email" maxlength="254" placeholder="ornek@mail.com" required></label>
+          </div>
+          <button class="btn btn-primary" id="editorInviteButton" type="submit">Davet gönder</button>
+        </form>
+        <p id="editorsMessage" class="admin-message" role="status" aria-live="polite"></p>
+        <div id="editorList" class="admin-account-list" aria-live="polite"></div>
       </section>
       <section id="accountsView" class="admin-panel-view hidden">
         <div class="admin-section-heading">
