@@ -150,3 +150,13 @@
 .admin-overview-status { flex:0 0 auto; font-size:.72rem; color:var(--text-secondary); border:1px solid var(--border-color); border-radius:999px; padding:.2rem .5rem; }
 .admin-overview-link { color:var(--accent-cyan); font-size:.8rem; white-space:nowrap; }
 @media(max-width:760px) { .admin-overview-stats { grid-template-columns:repeat(2,minmax(0,1fr)); gap:.7rem; } .admin-overview-columns { grid-template-columns:1fr; } }
+
+
+/* Embedded blog management inside Control Center */
+.admin-blog-embedded { width:100%; max-width:100%; margin:0; padding:0; }
+.admin-blog-heading { margin-bottom:1rem; }
+.admin-blog-embedded .blog-header { margin-top:0; }
+.admin-blog-embedded .blog-tools { margin-top:1rem; }
+.admin-blog-embedded .blog-form-panel { margin-top:1rem; }
+.admin-blog-embedded .blog-list { margin-bottom:1rem; }
+.admin-blog-embedded .blog-detail { margin-bottom:1rem; }
