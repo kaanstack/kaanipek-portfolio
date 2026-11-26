@@ -64,8 +64,8 @@ Deno.serve(async (req) => {
         granted_by: user.id,
       }, { onConflict: "user_id" });
       if (roleError) {
-        await admin.auth.admin.deleteUser(data.user.id);
-        return json({ error: "Davet oluşturuldu ancak editör yetkisi verilemedi: " + roleError.message }, 500);
+        // Do not delete the Auth account: it may have existed before this invite.
+        return json({ error: "Davet e-postası gönderildi ancak editör yetkisi verilemedi: " + roleError.message }, 500);
       }
       return json({ message: "Davet e-postası gönderildi. Kullanıcı bağlantıdan şifresini belirleyebilir." });
     }
