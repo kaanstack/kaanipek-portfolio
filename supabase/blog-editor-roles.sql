@@ -67,8 +67,8 @@ $$;
 revoke all on function public.is_blog_admin() from public;
 revoke all on function public.is_blog_editor() from public;
 revoke all on function public.has_blog_access() from public;
-grant execute on function public.is_blog_admin() to authenticated;
-grant execute on function public.is_blog_editor() to authenticated;
+grant execute on function public.is_blog_admin() to anon, authenticated;
+grant execute on function public.is_blog_editor() to anon, authenticated;
 grant execute on function public.has_blog_access() to authenticated;
 
 create or replace function public.grant_blog_editor(target_user_id uuid)
