@@ -22,7 +22,8 @@
     const discoveryEl = document.getElementById("blog-discovery");
     const featuredEl = document.getElementById("blog-featured");
     const searchInput = document.getElementById("blog-search");
-    const adminMode = new URLSearchParams(location.search).get("yonetim") === "1";
+    const embeddedAdminMode = document.body.dataset.adminBlog === "true";
+    const adminMode = embeddedAdminMode || new URLSearchParams(location.search).get("yonetim") === "1";
     const logoutButton = document.getElementById("adminLogout");
     const addButton = document.getElementById("newPostToggle");
     const formPanel = document.getElementById("blog-form-panel");
@@ -146,7 +147,8 @@
       setCanonical(absolutePostUrl(post));
     }
     const updateAdminUI = () => {
-      [addButton, copyButton, logoutButton].forEach(el => el?.classList.toggle("hidden", !isAdmin));
+      [addButton, copyButton].forEach(el => el?.classList.toggle("hidden", !isAdmin));
+      logoutButton?.classList.toggle("hidden", !isAdmin || embeddedAdminMode);
       if (!isAdmin) {
         formPanel?.classList.add("hidden");
         addButton?.setAttribute("aria-expanded", "false");
@@ -154,7 +156,7 @@
     };
 
     function showListRoute(updateHistory = false) {
-      if (updateHistory && location.pathname !== "/blog.html") {
+      if (updateHistory && !embeddedAdminMode && location.pathname !== "/blog.html") {
         history.pushState({}, "", "/blog.html");
       }
       detailEl.classList.add("hidden");
@@ -189,7 +191,7 @@
     }
 
     function openPost(post, updateHistory = true) {
-      if (updateHistory) history.pushState({blogPost:post.slug}, "", "/blog/" + encodeURIComponent(post.slug));
+      if (updateHistory && !embeddedAdminMode) history.pushState({blogPost:post.slug}, "", "/blog/" + encodeURIComponent(post.slug));
       const cover = safeImageUrl(post.coverImage);
       const paragraphs = post.content.map(p => "<p>" + escape(p) + "</p>").join("");
       detailEl.innerHTML = `
@@ -377,6 +379,8 @@
         showListRoute(false);
       }
     }
+
+    window.addEventListener("vki:refresh-blog", () => loadPosts().catch(error => setStatus("Blog yenilenemedi: " + error.message, true)));
 
     async function deletePost(post) {
       if (!confirm("“" + post.title + "” yazısını silmek istediğine emin misin?")) return;
