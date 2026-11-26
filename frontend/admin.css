@@ -105,3 +105,10 @@
 .admin-version-actions { display:flex; flex-wrap:wrap; gap:.55rem; padding-top:.8rem; border-top:1px solid var(--border-color); }
 .admin-current-badge { border:1px solid rgba(52,211,153,.4); color:#6ee7b7; background:rgba(6,78,59,.22); border-radius:999px; padding:.25rem .65rem; }
 @media(max-width:760px) { .admin-version-fields { grid-template-columns:1fr; } .admin-ticket-action-group { align-items:stretch; } .admin-status-wrap { width:100%; justify-content:space-between; } .admin-status-wrap select { flex:1; } .admin-pagination { gap:.55rem; } .admin-pagination button { padding:.5rem .7rem; } }
+
+
+/* Embedded blog manager inside Control Center */
+.admin-blog-heading { margin-bottom:1rem; }
+.admin-blog-frame-wrap { width:100%; overflow:hidden; border:1px solid var(--border-color); border-radius:16px; background:#070a11; }
+.admin-blog-frame-wrap iframe { display:block; width:100%; height: min(1500px, 78vh); min-height:900px; border:0; background:#070a11; }
+@media(max-width:760px) { .admin-blog-frame-wrap iframe { height:78vh; min-height:820px; } }
