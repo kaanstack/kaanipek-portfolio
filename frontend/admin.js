@@ -676,6 +676,8 @@
         await Promise.all([loadStats(), loadOverview()]);
       } else if (activeView === "accountsView") {
         await Promise.all([loadStats(), loadAccounts()]);
+      } else if (activeView === "editorsView") {
+        await loadEditors();
       } else if (activeView === "blogView") {
         window.dispatchEvent(new Event("vki:refresh-blog"));
         await loadStats();
