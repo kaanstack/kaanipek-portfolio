@@ -36,6 +36,8 @@ create table if not exists public.blog_user_roles (
 alter table public.blog_user_roles enable row level security;
 revoke all on public.blog_user_roles from anon, authenticated;
 grant select on public.blog_user_roles to authenticated;
+-- The Edge Function uses the server-side service_role client for editor management.
+grant all on public.blog_user_roles to service_role;
 
 create or replace function public.is_blog_admin()
 returns boolean
