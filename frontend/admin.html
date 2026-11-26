@@ -149,9 +149,61 @@
       <section id="blogView" class="admin-panel-view hidden">
         <div class="admin-section-heading admin-blog-heading">
           <div><h2>Blog yönetimi</h2><p class="admin-muted">Yazılarını oluştur, düzenle ve yayın arşivini yönet.</p></div>
-          <a class="btn btn-secondary" href="blog.html?yonetim=1" target="_blank" rel="noopener">Yeni sekmede aç ↗</a>
+          
         </div>
-        <div class="admin-blog-frame-wrap"><iframe id="blogAdminFrame" title="Blog yönetim alanı" src="blog.html?yonetim=1" loading="lazy"></iframe></div>
+        <div class="admin-blog-embedded">
+          <section class="blog-header">
+            <div class="blog-eyebrow"><span class="blog-eyebrow-dot"></span> KİŞİSEL TEKNİK YAYIN</div>
+            <h1>Fikirlerden <span>uygulamaya.</span></h1>
+            <p>Yazılım, kurumsal sistemler ve teknoloji üzerine öğrendiklerimi, denediklerimi ve not aldıklarımı paylaşıyorum.</p>
+            <div class="blog-header-foot"><span class="blog-header-index">VKI / NOTES — 001</span><span class="blog-header-caption">ÖĞREN · ÜRET · PAYLAŞ</span></div>
+            <div id="blog-filters" class="blog-filters" aria-label="Yazı kategorileri"></div>
+          </section>
+          <section id="blog-discovery" class="blog-discovery" aria-label="Blog yazılarını keşfet">
+            <div class="blog-results-label"><span>YAYIN ARŞİVİ</span><span id="blog-post-count">Yazılar yükleniyor…</span></div>
+            <label class="blog-search-wrap" for="blog-search"><span aria-hidden="true">⌕</span><input id="blog-search" type="search" placeholder="Yazılarda ara..." autocomplete="off"><kbd>ARA</kbd></label>
+          </section>
+          <section id="blog-featured" class="blog-featured" aria-label="Öne çıkan yazı"></section>
+          <section class="blog-tools" aria-label="Blog yönetimi">
+            <div class="blog-toolbar">
+              <button type="button" id="newPostToggle" class="btn btn-primary hidden" aria-expanded="false" aria-controls="blog-form-panel">✍ Yeni Yazı Ekle</button>
+              <button type="button" id="copyPostsJson" class="btn btn-secondary hidden">JSON Çıktısını Kopyala</button>
+              <button type="button" id="adminLogout" class="btn btn-secondary hidden">Çıkış Yap</button>
+            </div>
+            <p id="blog-status" class="blog-status" role="status" aria-live="polite"></p>
+          </section>
+          <section id="blog-form-panel" class="blog-form-panel hidden" aria-labelledby="blog-form-title">
+            <h2 id="blog-form-title">Yeni Blog Yazısı</h2>
+            <form id="blog-post-form" class="blog-form">
+              <div class="blog-form-grid">
+                <div class="form-group"><label for="postTitle">Başlık</label><input id="postTitle" name="title" type="text" required maxlength="160"></div>
+                <div class="form-group">
+                  <label for="postCategory">Kategori</label>
+                  <select id="postCategory" name="category" required>
+                    <option value="DevOps &amp; Altyapı">DevOps &amp; Altyapı</option>
+                    <option value="SAP &amp; Sistem">SAP &amp; Sistem</option>
+                    <option value="İHA &amp; Simülasyon">İHA &amp; Simülasyon</option>
+                    <option value="custom">Özel kategori...</option>
+                  </select>
+                  <input id="customPostCategory" class="blog-custom-category hidden" type="text" maxlength="80" placeholder="Kategori adını yazın" aria-label="Özel kategori">
+                </div>
+                <div class="form-group"><label for="postReadTime">Okuma Süresi</label><input id="postReadTime" name="readTime" type="text" required maxlength="40" placeholder="Örn: 5 dk"></div>
+                <div class="form-group blog-form-wide">
+                  <label for="coverImageFile">Kapak Görseli (JPG, PNG, WebP veya AVIF · en fazla 5 MB)</label>
+                  <input id="coverImageFile" type="file" accept="image/jpeg,image/png,image/webp,image/avif">
+                  <img id="coverImagePreview" class="cover-image-preview hidden" alt="Kapak görseli önizlemesi">
+                  <p class="blog-admin-note">Görsel seçmezsen mevcut kapak korunur. Yeni yazıda kapak görseli isteğe bağlıdır.</p>
+                </div>
+                <div class="form-group blog-form-wide"><label for="metaDescription">SEO Açıklaması (önerilen: 150–160 karakter)</label><textarea id="metaDescription" name="metaDescription" rows="2" maxlength="320" placeholder="Arama motorlarında görünebilecek kısa açıklama"></textarea></div>
+                <div class="form-group blog-form-wide"><label for="postSummary">Özet</label><textarea id="postSummary" name="summary" rows="3" required maxlength="500"></textarea></div>
+                <div class="form-group blog-form-wide"><label for="postContent">İçerik</label><textarea id="postContent" name="content" rows="8" required placeholder="Paragrafları boş bir satırla ayırın."></textarea></div>
+              </div>
+              <div class="blog-form-actions"><button type="submit" class="btn btn-primary">Yazıyı Kaydet</button><button type="button" id="cancelPostForm" class="btn btn-secondary">Vazgeç</button></div>
+            </form>
+          </section>
+          <section id="blog-detail" class="blog-detail hidden"></section>
+          <section id="blog-list" class="blog-list"></section>
+        </div>
       </section>
       <section id="accountsView" class="admin-panel-view hidden">
         <div class="admin-section-heading">
@@ -183,5 +235,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="admin.js"></script>
+  <script src="supabase-blog.js"></script>
 </body>
 </html>
