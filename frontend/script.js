@@ -60,29 +60,55 @@ function getTechRadarCache() {
     } catch { return null; }
 }
 
+async function mapWithConcurrency(items, limit, mapper) {
+    const results = new Array(items.length);
+    let nextIndex = 0;
+    const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+        while (nextIndex < items.length) {
+            const index = nextIndex++;
+            results[index] = await mapper(items[index], index);
+        }
+    });
+    await Promise.all(workers);
+    return results;
+}
+
+async function fetchWithTimeout(url, timeoutMs = 7000) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+        return await fetch(url, { signal: controller.signal });
+    } finally {
+        clearTimeout(timeoutId);
+    }
+}
+
 async function fetchTechRadarStories(force = false) {
     const cached = getTechRadarCache();
     if (!force && cached && Date.now() - cached.fetchedAt < TECH_RADAR_CACHE_TTL) return cached;
 
-    const response = await fetch("https://hacker-news.firebaseio.com/v0/topstories.json");
+    const response = await fetchWithTimeout("https://hacker-news.firebaseio.com/v0/topstories.json", 8000);
     if (!response.ok) throw new Error("Haber listesi alınamadı.");
     const ids = (await response.json()).slice(0, 45);
-    const items = await Promise.all(ids.map(async (id) => {
+    if (!Array.isArray(ids) || !ids.length) throw new Error("Haber listesi boş döndü.");
+
+    // Aynı anda en fazla 6 haber isteği gönder; bir hata tüm akışı durdurmasın.
+    const items = await mapWithConcurrency(ids, 6, async (id) => {
         try {
-            const result = await fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`);
+            const result = await fetchWithTimeout(`https://hacker-news.firebaseio.com/v0/item/${id}.json`, 6000);
             if (!result.ok) return null;
             const item = await result.json();
             if (!item || item.deleted || item.dead || !item.title || item.type !== "story") return null;
             return item;
         } catch { return null; }
-    }));
+    });
 
     const stories = items.filter(Boolean).slice(0, 15).map((item) => ({
         id: item.id,
         title: item.title,
         displayTitle: item.title,
         url: item.url || `https://news.ycombinator.com/item?id=${item.id}`,
-        domain: (() => { try { return new URL(item.url).hostname.replace(/^www\./, ""); } catch { return "news.ycombinator.com"; } })(),
+        domain: (() => { try { return new URL(item.url).hostname.replace(/^www\\./, ""); } catch { return "news.ycombinator.com"; } })(),
         author: item.by || "Hacker News",
         score: item.score || 0,
         comments: item.descendants || 0,
@@ -92,10 +118,12 @@ async function fetchTechRadarStories(force = false) {
         category: classifyTechStory(item)
     }));
 
-    // Başlık çevirisi başarısız olursa orijinal başlık korunur.
-    await Promise.all(stories.map(async (story) => {
+    if (!stories.length) throw new Error("Geçerli haber bulunamadı.");
+
+    // Çeviri servisini de sınırlı kullan; başarısızlıkta orijinal başlık gösterilir.
+    await mapWithConcurrency(stories, 3, async (story) => {
         try { story.displayTitle = await translateToTurkish(story.title); } catch { /* fallback title */ }
-    }));
+    });
 
     const value = { fetchedAt: Date.now(), stories };
     try { localStorage.setItem(TECH_RADAR_CACHE_KEY, JSON.stringify(value)); } catch { /* storage may be unavailable */ }
@@ -189,7 +217,10 @@ async function renderTechFeed(containerSelector, forceRefresh = false) {
         if (cached?.stories?.length) {
             currentStories = cached.stories;
             renderTechRadarStories(container, cached.stories, "Tümü", visibleLimit);
-            if (updated) updated.textContent = "Çevrimdışı önbellek gösteriliyor.";
+            if (updated) {
+                const date = cached.fetchedAt ? new Date(cached.fetchedAt).toLocaleString("tr-TR", { dateStyle: "medium", timeStyle: "short" }) : "";
+                updated.textContent = date ? `Güncel bağlantı kurulamadı · Son kayıt: ${date}` : "Güncel bağlantı kurulamadı · Kayıtlı haberler gösteriliyor.";
+            }
         } else {
             container.innerHTML = '<p class="news-loading">Haberler şu anda yüklenemedi. Lütfen biraz sonra tekrar deneyin.</p>';
         }
