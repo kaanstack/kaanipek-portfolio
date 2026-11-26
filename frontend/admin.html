@@ -53,6 +53,7 @@
         <button class="admin-tab" type="button" data-view="archiveView">Arşiv</button>
         <button class="admin-tab" type="button" data-view="versionsView">Sürümler</button>
         <button class="admin-tab" type="button" data-view="blogView">Blog yönetimi</button>
+        <button class="admin-tab" type="button" data-view="accountsView">Hesaplarım</button>
       </nav>
 
       <section id="ticketsView" class="admin-panel-view">
@@ -126,6 +127,31 @@
           <a class="btn btn-secondary" href="blog.html?yonetim=1" target="_blank" rel="noopener">Yeni sekmede aç ↗</a>
         </div>
         <div class="admin-blog-frame-wrap"><iframe id="blogAdminFrame" title="Blog yönetim alanı" src="blog.html?yonetim=1" loading="lazy"></iframe></div>
+      </section>
+      <section id="accountsView" class="admin-panel-view hidden">
+        <div class="admin-section-heading">
+          <div><h2>Hesaplarım</h2><p class="admin-muted">Platform hesaplarını ve giriş bağlantılarını düzenli tut. Parolalarını burada saklama.</p></div>
+          <a class="btn btn-secondary" href="https://vault.bitwarden.com/" target="_blank" rel="noopener noreferrer">Bitwarden kasasını aç ↗</a>
+        </div>
+        <div class="admin-account-safety card">
+          <strong><span aria-hidden="true">🔒</span> Güvenlik notu</strong>
+          <p>Bu bölüm yalnızca platform adı, kullanıcı adı/e-posta, giriş bağlantısı ve açıklama tutar. Şifre, kurtarma kodu veya API anahtarı ekleme; bunları Bitwarden'da sakla.</p>
+        </div>
+        <form id="accountForm" class="card admin-account-form">
+          <h3 id="accountFormTitle">Yeni hesap ekle</h3>
+          <div class="admin-account-fields">
+            <label>Platform adı<input id="accountPlatform" type="text" maxlength="80" placeholder="GitHub" required></label>
+            <label>Kullanıcı adı / e-posta<input id="accountUsername" type="text" maxlength="160" placeholder="ornek@mail.com"></label>
+            <label>Giriş bağlantısı<input id="accountUrl" type="url" maxlength="500" placeholder="https://..." inputmode="url"></label>
+          </div>
+          <label class="admin-account-notes-label">Not <span class="admin-muted">(isteğe bağlı)</span><textarea id="accountNotes" rows="2" maxlength="800" placeholder="Hesabın ne için kullanıldığı gibi hassas olmayan bir not."></textarea></label>
+          <div class="admin-account-form-actions">
+            <button class="btn btn-primary" id="saveAccountButton" type="submit">Hesabı kaydet</button>
+            <button class="btn btn-secondary hidden" id="cancelAccountEdit" type="button">Düzenlemeyi iptal et</button>
+          </div>
+        </form>
+        <p id="accountsMessage" class="admin-message" role="status" aria-live="polite"></p>
+        <div id="accountList" class="admin-account-list" aria-live="polite"></div>
       </section>
     </section>
   </main>
