@@ -175,7 +175,7 @@
       const paragraphs = post.content.map(p => "<p>" + escape(p) + "</p>").join("");
       detailEl.innerHTML = `
         <button type="button" id="back-to-list" class="back-btn">← Tüm Yazılara Dön</button>
-        <div class="blog-meta"><span>${escape(post.category)}</span><span>${escape(post.date)}</span><span>${escape(post.readTime)}</span></div>
+        <div class="blog-meta"><span class="blog-meta-category">${escape(post.category)}</span><span class="blog-meta-date"><span aria-hidden="true">◷</span> ${escape(post.date)}</span><span class="blog-meta-reading"><span aria-hidden="true">↗</span> ${escape(post.readTime)} okuma</span></div>
         <h1>${escape(post.title)}</h1>
         ${cover ? '<img class="blog-detail-cover" src="' + escape(cover) + '" alt="' + escape(post.title) + '" loading="eager">' : ""}
         <p class="blog-detail-summary">${escape(post.summary)}</p>
@@ -212,7 +212,7 @@
         <article class="blog-featured-card">
           <div class="blog-featured-copy">
             <span class="blog-featured-kicker">ÖNE ÇIKAN YAZI</span>
-            <div class="blog-meta"><span>${escape(post.category)}</span><span>${escape(post.date)}</span><span>${escape(post.readTime)}</span></div>
+            <div class="blog-meta"><span class="blog-meta-category">${escape(post.category)}</span><span class="blog-meta-date"><span aria-hidden="true">◷</span> ${escape(post.date)}</span><span class="blog-meta-reading"><span aria-hidden="true">↗</span> ${escape(post.readTime)} okuma</span></div>
             <h2>${escape(post.title)}</h2>
             <p>${escape(post.summary)}</p>
             <button type="button" class="blog-featured-link">Yazıyı keşfet <span aria-hidden="true">↗</span></button>
@@ -256,7 +256,7 @@
             <span class="blog-card-number">${String(index + 1).padStart(2,"0")}</span>
           </div>
           <div class="blog-card-body">
-            <div class="blog-meta"><span>${escape(post.category)}</span><span>${escape(post.date)}</span><span>${escape(post.readTime)}</span></div>
+            <div class="blog-meta"><span class="blog-meta-category">${escape(post.category)}</span><span class="blog-meta-date"><span aria-hidden="true">◷</span> ${escape(post.date)}</span><span class="blog-meta-reading"><span aria-hidden="true">↗</span> ${escape(post.readTime)} okuma</span></div>
             <h3>${escape(post.title)}</h3><p>${escape(post.summary)}</p>
             <button type="button" class="read-btn">Yazıyı oku <span aria-hidden="true">↗</span></button>
             ${isAdmin && post.id ? '<div class="blog-card-admin-actions"><button type="button" data-action="edit">Düzenle</button><button type="button" data-action="delete">Sil</button></div>' : ""}
