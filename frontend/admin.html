@@ -49,14 +49,39 @@
       </div>
 
       <nav class="admin-tabs" aria-label="Yönetim bölümleri">
-        <button class="admin-tab is-active" type="button" data-view="ticketsView">Destek talepleri</button>
+        <button class="admin-tab is-active" type="button" data-view="overviewView">Genel bakış</button>
+        <button class="admin-tab" type="button" data-view="ticketsView">Destek talepleri</button>
         <button class="admin-tab" type="button" data-view="archiveView">Arşiv</button>
         <button class="admin-tab" type="button" data-view="versionsView">Sürümler</button>
         <button class="admin-tab" type="button" data-view="blogView">Blog yönetimi</button>
         <button class="admin-tab" type="button" data-view="accountsView">Hesaplarım</button>
       </nav>
 
-      <section id="ticketsView" class="admin-panel-view">
+      <section id="overviewView" class="admin-panel-view">
+        <div class="admin-section-heading">
+          <div><h2>Genel bakış</h2><p class="admin-muted">Kontrol merkezindeki önemli kayıtların kısa özeti.</p></div>
+          <span class="admin-muted" id="overviewUpdated">Henüz güncellenmedi</span>
+        </div>
+        <div class="admin-overview-stats">
+          <article class="admin-stat card"><span>Açık destek talepleri</span><strong id="overviewTickets">—</strong></article>
+          <article class="admin-stat card"><span>Blog yazıları</span><strong id="overviewPosts">—</strong></article>
+          <article class="admin-stat card"><span>Kayıtlı hesaplar</span><strong id="overviewAccounts">—</strong></article>
+          <article class="admin-stat card"><span>Sürüm kayıtları</span><strong id="overviewVersions">—</strong></article>
+        </div>
+        <div class="admin-overview-columns">
+          <section class="card admin-overview-section">
+            <div class="admin-overview-title"><h3>Son destek talepleri</h3><button class="btn btn-secondary admin-small-button" type="button" data-open-view="ticketsView">Tümünü gör</button></div>
+            <div id="overviewRecentTickets" class="admin-overview-list"><p class="admin-muted">Yükleniyor…</p></div>
+          </section>
+          <section class="card admin-overview-section">
+            <div class="admin-overview-title"><h3>Son blog yazıları</h3><button class="btn btn-secondary admin-small-button" type="button" data-open-view="blogView">Blog yönetimi</button></div>
+            <div id="overviewRecentPosts" class="admin-overview-list"><p class="admin-muted">Yükleniyor…</p></div>
+          </section>
+        </div>
+        <p id="overviewMessage" class="admin-message" role="status" aria-live="polite"></p>
+      </section>
+
+      <section id="ticketsView" class="admin-panel-view hidden">
         <div class="admin-section-heading">
           <div><h2>Destek talepleri</h2><p class="admin-muted">Aktif talepleri yönet. Eski kayıtları arşivleyebilirsin.</p></div>
           
