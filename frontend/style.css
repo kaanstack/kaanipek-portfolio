@@ -1435,22 +1435,22 @@ body.light-theme {
    Keeps existing page structure and all application behavior.
    ========================================================= */
 :root {
-    --bg-main: #080d16;
-    --bg-navbar: rgba(8, 13, 22, .84);
-    --bg-card: #101a29;
-    --bg-card-hover: #142238;
-    --bg-subtle: rgba(148, 163, 184, .07);
-    --border-color: rgba(148, 163, 184, .15);
-    --text-primary: #edf4fb;
-    --text-secondary: #a5b4c5;
-    --accent-cyan: #67d5f5;
+    --bg-main: #080d18;
+    --bg-navbar: rgba(8, 13, 24, .86);
+    --bg-card: #101b2b;
+    --bg-card-hover: #15243a;
+    --bg-subtle: rgba(148, 163, 184, .065);
+    --border-color: rgba(148, 163, 184, .14);
+    --text-primary: #edf5ff;
+    --text-secondary: #a5b4c7;
+    --accent-cyan: #65c7ff;
     --accent-green: #65d6a5;
 }
 body.light-theme {
     --bg-main: #f5f8fc;
-    --bg-navbar: rgba(245, 248, 252, .9);
+    --bg-navbar: rgba(245, 248, 252, .92);
     --bg-card: #ffffff;
-    --bg-card-hover: #f0f7fb;
+    --bg-card-hover: #edf6fc;
     --bg-subtle: rgba(15, 35, 55, .045);
     --border-color: rgba(15, 35, 55, .12);
     --text-primary: #142235;
@@ -1461,8 +1461,8 @@ body.light-theme {
 body {
     background-color: var(--bg-main);
     background-image:
-        radial-gradient(ellipse at 50% -18%, rgba(56, 189, 248, .12), transparent 44%),
-        radial-gradient(ellipse at 92% 42%, rgba(16, 185, 129, .045), transparent 32%),
+        radial-gradient(ellipse at 50% -18%, rgba(56, 189, 248, .13), transparent 44%),
+        radial-gradient(ellipse at 92% 42%, rgba(16, 185, 129, .035), transparent 32%),
         linear-gradient(rgba(148, 163, 184, .025) 1px, transparent 1px),
         linear-gradient(90deg, rgba(148, 163, 184, .025) 1px, transparent 1px);
     background-size: auto, auto, 56px 56px, 56px 56px;
@@ -1474,7 +1474,7 @@ body.light-theme {
         linear-gradient(90deg, rgba(15, 35, 55, .025) 1px, transparent 1px);
     background-size: auto, 56px 56px, 56px 56px;
 }
-::selection { background: rgba(103, 213, 245, .25); color: var(--text-primary); }
+::selection { background: rgba(101, 199, 255, .24); color: var(--text-primary); }
 :focus-visible {
     outline: 2px solid var(--accent-cyan);
     outline-offset: 3px;
@@ -1486,7 +1486,7 @@ body.light-theme {
 }
 .nav-container { max-width: 1240px; min-height: 74px; }
 .brand { letter-spacing: -.04em; }
-.brand svg { filter: drop-shadow(0 5px 16px rgba(103, 213, 245, .13)); }
+.brand svg { filter: drop-shadow(0 5px 16px rgba(101, 199, 255, .14)); }
 .nav-links { gap: clamp(.8rem, 1.5vw, 1.45rem); }
 .nav-links a { font-size: .83rem; }
 .nav-links a:hover { color: var(--accent-cyan); }
@@ -1502,12 +1502,12 @@ body.light-theme {
 .hero-section::after {
     right: 2%;
     top: 16%;
-    color: rgba(103, 213, 245, .035);
+    color: rgba(101, 199, 255, .035);
     font-size: clamp(10rem, 25vw, 21rem);
 }
 .hero-badge {
-    background: rgba(103, 213, 245, .08);
-    border-color: rgba(103, 213, 245, .22);
+    background: rgba(101, 199, 255, .09);
+    border-color: rgba(101, 199, 255, .24);
     color: var(--accent-cyan);
     letter-spacing: .01em;
 }
@@ -1530,10 +1530,10 @@ body.light-theme {
     transition: transform .2s ease, border-color .2s ease, background-color .2s ease, box-shadow .2s ease;
 }
 .btn-primary {
-    background: linear-gradient(135deg, #1598c4, #087fa8);
-    box-shadow: 0 8px 24px rgba(8, 127, 168, .2);
+    background: linear-gradient(135deg, #27a9ed, #087fa8);
+    box-shadow: 0 8px 24px rgba(8, 127, 168, .22);
 }
-.btn-primary:hover { box-shadow: 0 12px 28px rgba(8, 127, 168, .28); }
+.btn-primary:hover { box-shadow: 0 12px 28px rgba(8, 127, 168, .3); }
 .btn-secondary, .btn-ghost { border-color: var(--border-color); }
 .content-section {
     padding: clamp(3.5rem, 6vw, 5rem) 0;
@@ -1554,16 +1554,16 @@ body.light-theme {
     box-shadow: 0 14px 34px rgba(0, 0, 0, .12);
 }
 .card::before {
-    background: linear-gradient(90deg, transparent, rgba(103, 213, 245, .42), transparent);
+    background: linear-gradient(90deg, transparent, rgba(101, 199, 255, .42), transparent);
 }
 .card:hover {
-    border-color: rgba(103, 213, 245, .38);
+    border-color: rgba(101, 199, 255, .4);
     transform: translateY(-3px);
 }
 .card h3 { letter-spacing: -.02em; line-height: 1.35; }
 .card-desc { line-height: 1.8; }
 .tag-pill {
-    background: rgba(103, 213, 245, .08);
+    background: rgba(101, 199, 255, .09);
     border-color: rgba(103, 213, 245, .2);
     color: var(--accent-cyan);
 }
@@ -1574,7 +1574,7 @@ body.light-theme {
 .card-link, .news-read-hint { color: var(--accent-cyan); }
 .news-category {
     color: var(--accent-cyan);
-    background: rgba(103, 213, 245, .08);
+    background: rgba(101, 199, 255, .09);
     border-color: rgba(103, 213, 245, .2);
 }
 .news-card {
@@ -1583,7 +1583,7 @@ body.light-theme {
     background: linear-gradient(110deg, rgba(255,255,255,.025), transparent 70%), var(--bg-card);
 }
 .news-card:hover {
-    border-color: rgba(103, 213, 245, .4);
+    border-color: rgba(101, 199, 255, .42);
     background: var(--bg-card-hover);
 }
 .live-badge {
@@ -1608,7 +1608,7 @@ body.light-theme {
 .form-group textarea { min-height: 112px; resize: vertical; }
 .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
     border-color: var(--accent-cyan);
-    box-shadow: 0 0 0 3px rgba(103, 213, 245, .1);
+    box-shadow: 0 0 0 3px rgba(101, 199, 255, .12);
 }
 .ticket-card { padding: clamp(1.2rem, 3vw, 2rem); }
 .ticket-lookup { border-top-color: var(--border-color); }
