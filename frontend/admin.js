@@ -228,6 +228,130 @@
     await Promise.all([loadTicketList(archived), loadStats()]);
   }
 
+
+  let editingAccountId = null;
+
+  function resetAccountForm() {
+    editingAccountId = null;
+    $("accountForm").reset();
+    $("accountFormTitle").textContent = "Yeni hesap ekle";
+    $("saveAccountButton").textContent = "Hesabı kaydet";
+    $("cancelAccountEdit").classList.add("hidden");
+  }
+
+  function validAccountUrl(value) {
+    if (!value) return null;
+    try {
+      const url = new URL(value);
+      return url.protocol === "https:" ? url.href : false;
+    } catch {
+      return false;
+    }
+  }
+
+  function createAccountCard(account) {
+    const card = makeElement("article", "card admin-account-card");
+    const header = makeElement("div", "admin-account-card-head");
+    const details = document.createElement("div");
+    details.append(
+      makeElement("h3", "", account.platform),
+      makeElement("p", "admin-account-username", account.username || "Kullanıcı adı eklenmemiş")
+    );
+    header.append(details);
+    if (account.login_url) {
+      const link = makeElement("a", "btn btn-secondary admin-small-button", "Giriş sayfası ↗");
+      link.href = account.login_url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      header.append(link);
+    }
+    card.append(header);
+    if (account.notes) card.append(makeElement("p", "admin-account-notes", account.notes));
+    const actions = makeElement("div", "admin-account-actions");
+    const edit = makeElement("button", "btn btn-secondary admin-small-button", "Düzenle");
+    edit.type = "button";
+    edit.addEventListener("click", () => {
+      editingAccountId = account.id;
+      $("accountPlatform").value = account.platform || "";
+      $("accountUsername").value = account.username || "";
+      $("accountUrl").value = account.login_url || "";
+      $("accountNotes").value = account.notes || "";
+      $("accountFormTitle").textContent = "Hesabı düzenle";
+      $("saveAccountButton").textContent = "Değişiklikleri kaydet";
+      $("cancelAccountEdit").classList.remove("hidden");
+      $("accountPlatform").focus();
+      $("accountForm").scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+    const remove = makeElement("button", "btn btn-danger admin-small-button", "Sil");
+    remove.type = "button";
+    remove.addEventListener("click", async () => {
+      if (!window.confirm(account.platform + " hesabının kayıt bilgileri silinsin mi?")) return;
+      const { error } = await supabase.from("account_inventory").delete().eq("id", account.id);
+      if (error) {
+        setMessage($("accountsMessage"), "Kayıt silinemedi: " + error.message, true);
+        return;
+      }
+      if (editingAccountId === account.id) resetAccountForm();
+      await loadAccounts();
+    });
+    actions.append(edit, remove);
+    card.append(actions);
+    return card;
+  }
+
+  async function loadAccounts() {
+    const list = $("accountList");
+    if (!list) return;
+    list.replaceChildren();
+    setMessage($("accountsMessage"), "Hesap kayıtları yükleniyor…");
+    const { data, error } = await supabase.from("account_inventory")
+      .select("id,platform,username,login_url,notes,created_at,updated_at")
+      .order("platform", { ascending: true });
+    if (error) {
+      setMessage($("accountsMessage"), "Hesap kayıtları yüklenemedi. Önce supabase/account-inventory.sql dosyasını Supabase SQL Editor'de çalıştır. " + error.message, true);
+      return;
+    }
+    if (!data?.length) {
+      list.append(makeElement("div", "card admin-empty", "Henüz hesap eklenmemiş. İlk platform hesabını yukarıdaki formdan ekleyebilirsin."));
+    } else {
+      data.forEach(account => list.append(createAccountCard(account)));
+    }
+    setMessage($("accountsMessage"), data?.length ? data.length + " hesap kaydı." : "Hesap listen hazır.");
+  }
+
+  $("accountForm").addEventListener("submit", async event => {
+    event.preventDefault();
+    const button = $("saveAccountButton");
+    const platform = $("accountPlatform").value.trim();
+    const username = $("accountUsername").value.trim();
+    const rawUrl = $("accountUrl").value.trim();
+    const loginUrl = validAccountUrl(rawUrl);
+    if (loginUrl === false) {
+      setMessage($("accountsMessage"), "Giriş bağlantısı https:// ile başlayan geçerli bir adres olmalı.", true);
+      return;
+    }
+    const payload = {
+      platform,
+      username: username || null,
+      login_url: loginUrl,
+      notes: $("accountNotes").value.trim() || null,
+      updated_at: new Date().toISOString()
+    };
+    button.disabled = true;
+    const result = editingAccountId
+      ? await supabase.from("account_inventory").update(payload).eq("id", editingAccountId)
+      : await supabase.from("account_inventory").insert(payload);
+    button.disabled = false;
+    if (result.error) {
+      setMessage($("accountsMessage"), "Hesap kaydedilemedi: " + result.error.message, true);
+      return;
+    }
+    resetAccountForm();
+    await loadAccounts();
+  });
+
+  $("cancelAccountEdit").addEventListener("click", resetAccountForm);
+
   function switchView(viewId) {
     activeView = viewId;
     document.querySelectorAll(".admin-panel-view").forEach(view => view.classList.toggle("hidden", view.id !== viewId));
@@ -235,6 +359,7 @@
     if (viewId === "ticketsView") loadTicketList(false);
     if (viewId === "archiveView") loadTicketList(true);
     if (viewId === "versionsView") loadVersions();
+    if (viewId === "accountsView") loadAccounts();
     if (viewId === "blogView") {
       const frame = $("blogAdminFrame");
       if (frame && !frame.dataset.loaded) frame.dataset.loaded = "true";
@@ -378,7 +503,9 @@
   });
   $("refreshButton").addEventListener("click", async () => {
     try {
-      if (activeView === "blogView") {
+      if (activeView === "accountsView") {
+        await Promise.all([loadStats(), loadAccounts()]);
+      } else if (activeView === "blogView") {
         const frame = $("blogAdminFrame");
         if (frame) frame.contentWindow.location.reload();
         await loadStats();
