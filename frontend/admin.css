@@ -160,3 +160,16 @@
 .admin-blog-embedded .blog-form-panel { margin-top:1rem; }
 .admin-blog-embedded .blog-list { margin-bottom:1rem; }
 .admin-blog-embedded .blog-detail { margin-bottom:1rem; }
+
+
+/* Minimal blog controls inside the Control Center */
+.admin-blog-embedded { width:100%; max-width:100%; margin:0; padding:0; }
+.admin-blog-toolbar { display:flex; align-items:center; flex-wrap:wrap; gap:.8rem; margin:0 0 1rem; }
+.admin-blog-toolbar .blog-status { margin:0; }
+.admin-blog-list { display:grid; gap:.65rem; }
+.admin-blog-post-row { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:1rem 1.1rem; border:1px solid var(--border-color); border-radius:12px; background:rgba(255,255,255,.02); }
+.admin-blog-post-info { min-width:0; }
+.admin-blog-post-info h3 { margin:0 0 .3rem; font-size:.98rem; overflow-wrap:anywhere; }
+.admin-blog-post-info p { margin:0; color:var(--text-secondary); font-size:.8rem; }
+.admin-blog-embedded .blog-form-panel { margin:0 0 1rem; }
+@media(max-width:600px) { .admin-blog-post-row { align-items:flex-start; } .admin-blog-post-row .btn { flex:0 0 auto; } }
