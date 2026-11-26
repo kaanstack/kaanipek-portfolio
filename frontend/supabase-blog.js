@@ -236,6 +236,7 @@
             <h2>${escape(post.title)}</h2>
             <p>${escape(post.summary)}</p>
             <button type="button" class="blog-featured-link">Yazıyı keşfet <span aria-hidden="true">↗</span></button>
+            ${isAdmin && post.id ? '<div class="blog-card-admin-actions"><button type="button" data-action="edit">Düzenle</button><button type="button" data-action="delete">Sil</button></div>' : ""}
           </div>
           <div class="blog-featured-art ${cover ? "has-cover" : ""}">
             ${cover ? '<img src="' + escape(cover) + '" alt="' + escape(post.title) + '" loading="eager">' : '<div class="blog-art-mark" aria-hidden="true">VKI<span> / NOTES</span></div>'}
@@ -244,6 +245,10 @@
         </article>`;
       attachCoverFallback(featuredEl.querySelector(".blog-featured-art img"), "featured");
       featuredEl.querySelector(".blog-featured-link")?.addEventListener("click", () => openPost(post));
+      if (isAdmin && post.id) {
+        featuredEl.querySelector('[data-action="edit"]')?.addEventListener("click", () => beginEdit(post));
+        featuredEl.querySelector('[data-action="delete"]')?.addEventListener("click", () => deletePost(post));
+      }
     }
 
     searchInput?.addEventListener("input", renderList);
