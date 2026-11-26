@@ -42,14 +42,16 @@
   // Normalize punctuation/diacritics so variants such as "s*ktir" are caught too.
   function hasUnsafeTranslation(value) {
     const normalized = safeText(value).toLocaleLowerCase("tr-TR")
-      .normalize("NFD").replace(/[\\u0300-\\u036f]/g, "")
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
       .replace(/ı/g, "i");
+    // Noktalama işaretlerini ayırıcı kabul et: "hassiktir, hassiktir" de yakalansın.
     const compact = normalized.replace(/[^a-z0-9]+/g, " ").trim();
     const blockedWords = new Set([
       "siktir", "siktirgit", "siktirgitmek", "sikerim", "sikiyorum", "siktim",
-      "hasiktir", "hasiktir", "amk", "aq", "orospu", "pic", "yarrak", "gotveren"
+      "hassiktir", "hasiktir", "amk", "aq", "orospu", "pic", "yarrak", "gotveren",
+      "fuck", "fucking", "shit", "shitty", "asshole", "bitch", "bastard"
     ]);
-    return compact.split(/\\s+/).some((word) => blockedWords.has(word));
+    return compact.split(/\s+/).some((word) => blockedWords.has(word));
   }
 
   async function translateToTurkish(value) {
