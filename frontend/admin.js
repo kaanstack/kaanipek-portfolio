@@ -29,7 +29,7 @@
   let archivePage = 0;
   let ticketCount = 0;
   let archiveCount = 0;
-  let activeView = "ticketsView";
+  let activeView = "overviewView";
   let searchTimer;
 
   function setMessage(element, message, isError = false) {
@@ -352,10 +352,86 @@
 
   $("cancelAccountEdit").addEventListener("click", resetAccountForm);
 
+
+  async function loadOverview() {
+    setMessage($("overviewMessage"), "Özet bilgiler yükleniyor…");
+    const countQuery = async (table, query) => {
+      let request = supabase.from(table).select("id", { count: "exact", head: true });
+      if (query) request = query(request);
+      const result = await request;
+      if (result.error) throw result.error;
+      return result.count || 0;
+    };
+
+    const results = await Promise.allSettled([
+      countQuery("tickets", q => q.is("archived_at", null).neq("status", "closed")),
+      countQuery("posts"),
+      countQuery("account_inventory"),
+      countQuery("site_versions")
+    ]);
+    const ids = ["overviewTickets", "overviewPosts", "overviewAccounts", "overviewVersions"];
+    results.forEach((result, index) => {
+      $(ids[index]).textContent = result.status === "fulfilled" ? result.value : "—";
+    });
+
+    const [tickets, posts] = await Promise.allSettled([
+      supabase.from("tickets").select("id,ticket_number,name,status,created_at").is("archived_at", null).order("created_at", { ascending: false }).limit(5),
+      supabase.from("posts").select("id,title,slug,created_at").order("created_at", { ascending: false }).limit(5)
+    ]);
+
+    const ticketList = $("overviewRecentTickets");
+    ticketList.replaceChildren();
+    if (tickets.status === "fulfilled" && !tickets.value.error) {
+      const rows = tickets.value.data || [];
+      if (!rows.length) ticketList.append(makeElement("p", "admin-muted", "Henüz destek talebi yok."));
+      rows.forEach(ticket => {
+        const item = makeElement("div", "admin-overview-item");
+        const info = document.createElement("div");
+        info.append(
+          makeElement("strong", "", "#" + ticket.ticket_number + " · " + (ticket.name || "İsimsiz kullanıcı")),
+          makeElement("span", "admin-muted", formatDate(ticket.created_at))
+        );
+        const status = makeElement("span", "admin-overview-status", STATUS_LABELS[ticket.status] || ticket.status);
+        item.append(info, status);
+        ticketList.append(item);
+      });
+    } else {
+      ticketList.append(makeElement("p", "admin-muted", "Destek talepleri şu anda yüklenemedi."));
+    }
+
+    const postList = $("overviewRecentPosts");
+    postList.replaceChildren();
+    if (posts.status === "fulfilled" && !posts.value.error) {
+      const rows = posts.value.data || [];
+      if (!rows.length) postList.append(makeElement("p", "admin-muted", "Henüz blog yazısı yok."));
+      rows.forEach(post => {
+        const item = makeElement("div", "admin-overview-item");
+        const info = document.createElement("div");
+        info.append(
+          makeElement("strong", "", post.title || "Başlıksız yazı"),
+          makeElement("span", "admin-muted", formatDate(post.created_at))
+        );
+        const link = makeElement("a", "admin-overview-link", "Görüntüle ↗");
+        link.href = "blog.html?slug=" + encodeURIComponent(post.slug || "");
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        item.append(info, link);
+        postList.append(item);
+      });
+    } else {
+      postList.append(makeElement("p", "admin-muted", "Blog yazıları şu anda yüklenemedi."));
+    }
+
+    $("overviewUpdated").textContent = "Güncellendi: " + new Intl.DateTimeFormat("tr-TR", { hour: "2-digit", minute: "2-digit" }).format(new Date());
+    const failures = results.filter(result => result.status === "rejected").length;
+    setMessage($("overviewMessage"), failures ? "Bazı özet sayaçları yüklenemedi. İlgili bölümün SQL ve erişim izinlerini kontrol et." : "Kontrol merkezi güncel.");
+  }
+
   function switchView(viewId) {
     activeView = viewId;
     document.querySelectorAll(".admin-panel-view").forEach(view => view.classList.toggle("hidden", view.id !== viewId));
     document.querySelectorAll(".admin-tab").forEach(tab => tab.classList.toggle("is-active", tab.dataset.view === viewId));
+    if (viewId === "overviewView") loadOverview();
     if (viewId === "ticketsView") loadTicketList(false);
     if (viewId === "archiveView") loadTicketList(true);
     if (viewId === "versionsView") loadVersions();
@@ -487,7 +563,7 @@
     } else {
       showDashboard(true);
       try {
-        await Promise.all([loadStats(), loadTicketList(false)]);
+        await Promise.all([loadStats(), loadOverview()]);
       } catch (err) {
         setMessage($("ticketsMessage"), "Panel verileri yüklenemedi: " + err.message, true);
       }
@@ -503,7 +579,9 @@
   });
   $("refreshButton").addEventListener("click", async () => {
     try {
-      if (activeView === "accountsView") {
+      if (activeView === "overviewView") {
+        await Promise.all([loadStats(), loadOverview()]);
+      } else if (activeView === "accountsView") {
         await Promise.all([loadStats(), loadAccounts()]);
       } else if (activeView === "blogView") {
         const frame = $("blogAdminFrame");
@@ -517,6 +595,7 @@
     }
   });
   document.querySelectorAll(".admin-tab").forEach(tab => tab.addEventListener("click", () => switchView(tab.dataset.view)));
+  document.querySelectorAll("[data-open-view]").forEach(button => button.addEventListener("click", () => switchView(button.dataset.openView)));
   $("ticketSearch").addEventListener("input", () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => { ticketPage = 0; loadTicketList(false); }, 300); });
   $("archiveSearch").addEventListener("input", () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => { archivePage = 0; loadTicketList(true); }, 300); });
   $("statusFilter").addEventListener("change", () => { ticketPage = 0; loadTicketList(false); });
@@ -535,7 +614,7 @@
     if (error) throw error;
     if (data.session?.user?.id === ADMIN_UID) {
       showDashboard(true);
-      await Promise.all([loadStats(), loadTicketList(false)]);
+      await Promise.all([loadStats(), loadOverview()]);
     } else if (data.session) {
       await supabase.auth.signOut();
     }
