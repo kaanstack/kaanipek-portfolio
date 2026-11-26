@@ -71,6 +71,42 @@ grant execute on function public.is_blog_admin() to authenticated;
 grant execute on function public.is_blog_editor() to authenticated;
 grant execute on function public.has_blog_access() to authenticated;
 
+create or replace function public.grant_blog_editor(target_user_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $
+begin
+  if not public.is_blog_admin() then
+    raise exception 'Only the site administrator can grant editor access';
+  end if;
+  insert into public.blog_user_roles (user_id, role, granted_by)
+  values (target_user_id, 'editor', auth.uid())
+  on conflict (user_id) do update
+    set role = 'editor', granted_by = auth.uid();
+end;
+$;
+
+create or replace function public.revoke_blog_editor(target_user_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $
+begin
+  if not public.is_blog_admin() then
+    raise exception 'Only the site administrator can revoke editor access';
+  end if;
+  delete from public.blog_user_roles where user_id = target_user_id;
+end;
+$;
+
+revoke all on function public.grant_blog_editor(uuid) from public;
+revoke all on function public.revoke_blog_editor(uuid) from public;
+grant execute on function public.grant_blog_editor(uuid) to authenticated;
+grant execute on function public.revoke_blog_editor(uuid) to authenticated;
+
 drop policy if exists "Blog roles readable by owner" on public.blog_user_roles;
 create policy "Blog roles readable by owner"
 on public.blog_user_roles for select to authenticated
