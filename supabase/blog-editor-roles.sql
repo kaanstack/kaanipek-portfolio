@@ -82,7 +82,7 @@ returns void
 language plpgsql
 security definer
 set search_path = ''
-as $
+as $$
 begin
   if not public.is_blog_admin() then
     raise exception 'Only the site administrator can grant editor access';
@@ -92,21 +92,21 @@ begin
   on conflict (user_id) do update
     set role = 'editor', granted_by = auth.uid();
 end;
-$;
+$$;
 
 create or replace function public.revoke_blog_editor(target_user_id uuid)
 returns void
 language plpgsql
 security definer
 set search_path = ''
-as $
+as $$
 begin
   if not public.is_blog_admin() then
     raise exception 'Only the site administrator can revoke editor access';
   end if;
   delete from public.blog_user_roles where user_id = target_user_id;
 end;
-$;
+$$;
 
 revoke all on function public.grant_blog_editor(uuid) from public;
 revoke all on function public.revoke_blog_editor(uuid) from public;
