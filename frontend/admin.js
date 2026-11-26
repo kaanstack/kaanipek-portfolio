@@ -437,8 +437,7 @@
     if (viewId === "versionsView") loadVersions();
     if (viewId === "accountsView") loadAccounts();
     if (viewId === "blogView") {
-      const frame = $("blogAdminFrame");
-      if (frame && !frame.dataset.loaded) frame.dataset.loaded = "true";
+      // Blog manager is mounted directly in this page and shares the admin session.
     }
   }
 
@@ -584,8 +583,7 @@
       } else if (activeView === "accountsView") {
         await Promise.all([loadStats(), loadAccounts()]);
       } else if (activeView === "blogView") {
-        const frame = $("blogAdminFrame");
-        if (frame) frame.contentWindow.location.reload();
+        window.dispatchEvent(new Event("vki:refresh-blog"));
         await loadStats();
       } else {
         await Promise.all([loadStats(), activeView === "versionsView" ? loadVersions() : loadTickets()]);
