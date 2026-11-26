@@ -535,7 +535,7 @@
           excerpt: summary, content: content.join("\n\n"),
           author: "Veysel Kaan İpek", cover_image: coverImage || null,
           meta_description: metaDescription,
-          ...(isEditor ? { author_id: currentUserId, status: "pending", submitted_at: new Date().toISOString() } : {})
+          ...(isEditor ? { author_id: currentUserId, status: "pending", submitted_at: new Date().toISOString(), review_note: null } : {})
         };
         const query = editingId
           ? supabaseClient.from("posts").update(payload).eq("id",editingId)
@@ -551,7 +551,7 @@
         setStatus("Yazı kaydedilemedi: " + (error.message || "Bilinmeyen hata"),true);
       } finally {
         saveButton.disabled = false;
-        saveButton.textContent = "Yazıyı Kaydet";
+        saveButton.textContent = isEditor ? "Onaya gönder" : "Yazıyı Kaydet";
       }
     });
 
