@@ -275,6 +275,25 @@
         return;
       }
       filtered.forEach((post, index) => {
+        if (embeddedAdminMode) {
+          const row = document.createElement("article");
+          row.className = "admin-blog-post-row";
+          const info = document.createElement("div");
+          info.className = "admin-blog-post-info";
+          const title = document.createElement("h3");
+          title.textContent = post.title;
+          const meta = document.createElement("p");
+          meta.textContent = [post.category, post.date].filter(Boolean).join(" · ");
+          info.append(title, meta);
+          const edit = document.createElement("button");
+          edit.type = "button";
+          edit.className = "btn btn-secondary admin-small-button";
+          edit.textContent = "Düzenle";
+          edit.addEventListener("click", () => beginEdit(post));
+          row.append(info, edit);
+          listEl.appendChild(row);
+          return;
+        }
         const card = document.createElement("article");
         card.className = "blog-card";
         const cover = safeImageUrl(post.coverImage);
