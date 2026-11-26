@@ -290,7 +290,15 @@
           edit.className = "btn btn-secondary admin-small-button";
           edit.textContent = "Düzenle";
           edit.addEventListener("click", () => beginEdit(post));
-          row.append(info, edit);
+          const remove = document.createElement("button");
+          remove.type = "button";
+          remove.className = "btn btn-danger admin-small-button";
+          remove.textContent = "Sil";
+          remove.addEventListener("click", () => deletePost(post));
+          const actions = document.createElement("div");
+          actions.className = "admin-blog-post-actions";
+          actions.append(edit, remove);
+          row.append(info, actions);
           listEl.appendChild(row);
           return;
         }
