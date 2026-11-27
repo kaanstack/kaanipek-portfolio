@@ -225,3 +225,23 @@
   .admin-blog-post-actions { display: grid; grid-template-columns: 1fr 1fr; }
   .admin-blog-post-actions .btn-primary { grid-column: 1 / -1; }
 }
+
+/* Development journal admin */
+.admin-development-form { display:grid; gap:.8rem; padding:1.2rem; margin:1rem 0; }
+.admin-development-form h3 { margin:0; }
+.admin-development-fields { display:grid; grid-template-columns:minmax(0,1.4fr) minmax(150px,.8fr) minmax(150px,.7fr); gap:.8rem; }
+.admin-development-form label { display:grid; gap:.4rem; color:var(--text-secondary); font-size:.84rem; }
+.admin-development-form input:not([type="checkbox"]), .admin-development-form select, .admin-development-form textarea {
+ width:100%; min-width:0; padding:.7rem .8rem; color:#e8eef8; color-scheme:dark; background:#0d1422;
+ border:1px solid var(--border-color); border-radius:10px; font:inherit;
+}
+.admin-development-publish { display:flex !important; align-items:center; gap:.55rem !important; }
+.admin-development-publish input { width:17px; height:17px; }
+.admin-development-actions { display:flex; flex-wrap:wrap; gap:.55rem; }
+.admin-development-list { display:grid; gap:.8rem; }
+.admin-development-card { padding:1.1rem 1.2rem; }
+.admin-development-card-head { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; }
+.admin-development-card h3 { margin:0 0 .25rem; font-size:1rem; }
+.admin-development-card-head p,.admin-development-summary { margin:0; color:var(--text-secondary); font-size:.84rem; }
+.admin-development-summary { margin:.85rem 0; white-space:pre-wrap; }
+@media(max-width:760px) { .admin-development-fields { grid-template-columns:1fr; } .admin-development-card-head { flex-direction:column; } }
