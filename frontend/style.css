@@ -2137,3 +2137,13 @@ body.light-theme .github-panel { background: rgba(255, 255, 255, .78); }
     .development-section { padding: 1.6rem 1rem; margin-inline: -.25rem; }
     .development-entry { gap: .7rem; }
 }
+
+/* Portfolio projects: flexible cards and safe content wrapping */
+.projects-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr)); align-items:stretch; }
+.project-card { min-width:0; height:100%; display:flex; flex-direction:column; }
+.project-card h3,.project-card .card-desc { overflow-wrap:anywhere; }
+.project-card .card-desc { flex:1 1 auto; }
+.project-card .tech-mini { overflow-wrap:anywhere; }
+.project-card-links { display:flex; align-items:center; flex-wrap:wrap; justify-content:flex-end; gap:.65rem; }
+.projects-loading,.projects-empty { grid-column:1/-1; color:var(--text-secondary); padding:1rem 0; }
+@media(max-width:720px) { .projects-grid { grid-template-columns:minmax(0,1fr); } }
