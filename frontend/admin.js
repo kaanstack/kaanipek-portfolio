@@ -456,6 +456,7 @@
     if (viewId === "archiveView") loadTicketList(true);
     if (viewId === "versionsView") loadVersions();
     if (viewId === "developmentView") loadDevelopmentEntries();
+    if (viewId === "projectsView") loadProjectsAdmin();
     if (viewId === "accountsView") loadAccounts();
     if (viewId === "editorsView") loadEditors();
     if (viewId === "blogView") {
@@ -807,6 +808,130 @@
   });
   $("cancelDevelopmentEdit").addEventListener("click", resetDevelopmentForm);
 
+  let editingProjectId = null;
+  function resetProjectForm() {
+    editingProjectId = null;
+    $("projectForm").reset();
+    $("projectSortOrder").value = "0";
+    $("projectPublished").checked = true;
+    $("projectFormTitle").textContent = "Yeni proje ekle";
+    $("saveProjectButton").textContent = "Projeyi kaydet";
+    $("cancelProjectEdit").classList.add("hidden");
+  }
+  function safeProjectUrl(value) {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    try {
+      const url = new URL(trimmed);
+      return url.protocol === "https:" ? url.href : null;
+    } catch (_) { return null; }
+  }
+  async function loadProjectsAdmin() {
+    const list = $("projectAdminList");
+    setMessage($("projectsMessage"), "Projeler yükleniyor…");
+    list.replaceChildren();
+    const { data, error } = await supabase.from("portfolio_projects")
+      .select("id,title_tr,title_en,description_tr,description_en,category,technologies,github_url,live_url,sort_order,is_published,created_at")
+      .order("sort_order", { ascending: true }).order("created_at", { ascending: false });
+    if (error) {
+      list.append(makeElement("div", "card admin-empty", "Proje tablosu hazır değil. Önce supabase/portfolio-projects.sql dosyasını Supabase SQL Editor'de çalıştır."));
+      setMessage($("projectsMessage"), "Projeler yüklenemedi: " + error.message, true);
+      return;
+    }
+    if (!data?.length) list.append(makeElement("div", "card admin-empty", "Henüz proje yok. İlk projeni yukarıdaki formdan ekleyebilirsin."));
+    data?.forEach(project => {
+      const card = makeElement("article", "card admin-project-card");
+      const head = makeElement("div", "admin-project-card-head");
+      const info = document.createElement("div");
+      info.append(makeElement("h3", "", project.title_tr), makeElement("p", "admin-muted", project.category + " · Sıra: " + project.sort_order));
+      head.append(info, makeElement("span", project.is_published ? "admin-current-badge" : "admin-priority", project.is_published ? "Yayında" : "Taslak"));
+      const description = makeElement("p", "admin-project-summary", project.description_tr);
+      const tech = makeElement("p", "admin-muted", (project.technologies || []).join(" · "));
+      const actions = makeElement("div", "admin-project-actions");
+      const edit = makeElement("button", "btn btn-secondary admin-small-button", "Düzenle");
+      edit.type = "button";
+      edit.addEventListener("click", () => {
+        editingProjectId = project.id;
+        $("projectTitleTr").value = project.title_tr || "";
+        $("projectTitleEn").value = project.title_en || "";
+        $("projectCategory").value = project.category || "";
+        $("projectDescriptionTr").value = project.description_tr || "";
+        $("projectDescriptionEn").value = project.description_en || "";
+        $("projectTechnologies").value = (project.technologies || []).join(", ");
+        $("projectGithubUrl").value = project.github_url || "";
+        $("projectLiveUrl").value = project.live_url || "";
+        $("projectSortOrder").value = project.sort_order ?? 0;
+        $("projectPublished").checked = Boolean(project.is_published);
+        $("projectFormTitle").textContent = "Projeyi düzenle";
+        $("saveProjectButton").textContent = "Değişiklikleri kaydet";
+        $("cancelProjectEdit").classList.remove("hidden");
+        $("projectForm").scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+      const toggle = makeElement("button", "btn btn-secondary admin-small-button", project.is_published ? "Yayından kaldır" : "Yayınla");
+      toggle.type = "button";
+      toggle.addEventListener("click", async () => {
+        toggle.disabled = true;
+        const { error: updateError } = await supabase.from("portfolio_projects").update({ is_published: !project.is_published }).eq("id", project.id);
+        if (updateError) setMessage($("projectsMessage"), "Yayın durumu değiştirilemedi: " + updateError.message, true);
+        await loadProjectsAdmin();
+      });
+      const remove = makeElement("button", "btn btn-danger admin-small-button", "Sil");
+      remove.type = "button";
+      remove.addEventListener("click", async () => {
+        if (!window.confirm('"' + project.title_tr + '" projesi kalıcı olarak silinsin mi?')) return;
+        remove.disabled = true;
+        const { error: deleteError } = await supabase.from("portfolio_projects").delete().eq("id", project.id);
+        if (deleteError) setMessage($("projectsMessage"), "Proje silinemedi: " + deleteError.message, true);
+        await loadProjectsAdmin();
+      });
+      actions.append(edit, toggle, remove);
+      card.append(head, description, tech, actions);
+      list.append(card);
+    });
+    setMessage($("projectsMessage"), (data?.length || 0) + " proje listelendi.");
+  }
+  $("projectForm").addEventListener("submit", async event => {
+    event.preventDefault();
+    const githubUrl = safeProjectUrl($("projectGithubUrl").value);
+    const liveUrl = safeProjectUrl($("projectLiveUrl").value);
+    if ($("projectGithubUrl").value.trim() && !githubUrl) {
+      setMessage($("projectsMessage"), "GitHub bağlantısı geçerli bir HTTPS adresi olmalı.", true); return;
+    }
+    if ($("projectLiveUrl").value.trim() && !liveUrl) {
+      setMessage($("projectsMessage"), "Canlı demo bağlantısı geçerli bir HTTPS adresi olmalı.", true); return;
+    }
+    const technologies = $("projectTechnologies").value.split(",").map(value => value.trim()).filter(Boolean).slice(0, 12);
+    if (!technologies.length) {
+      setMessage($("projectsMessage"), "En az bir teknoloji etiketi ekle.", true); return;
+    }
+    const payload = {
+      title_tr: $("projectTitleTr").value.trim(),
+      title_en: $("projectTitleEn").value.trim(),
+      description_tr: $("projectDescriptionTr").value.trim(),
+      description_en: $("projectDescriptionEn").value.trim(),
+      category: $("projectCategory").value.trim(),
+      technologies,
+      github_url: githubUrl,
+      live_url: liveUrl,
+      sort_order: Number($("projectSortOrder").value),
+      is_published: $("projectPublished").checked
+    };
+    const button = $("saveProjectButton");
+    button.disabled = true;
+    const result = editingProjectId
+      ? await supabase.from("portfolio_projects").update(payload).eq("id", editingProjectId)
+      : await supabase.from("portfolio_projects").insert(payload);
+    button.disabled = false;
+    if (result.error) {
+      setMessage($("projectsMessage"), "Proje kaydedilemedi: " + result.error.message, true); return;
+    }
+    resetProjectForm();
+    setMessage($("projectsMessage"), "Proje kaydedildi.");
+    await loadProjectsAdmin();
+  });
+  $("cancelProjectEdit").addEventListener("click", resetProjectForm);
+
+
   $("loginForm").addEventListener("submit", async event => {
     event.preventDefault();
     setMessage(loginMessage, "");
@@ -852,6 +977,8 @@
         await Promise.all([loadStats(), loadAccounts()]);
       } else if (activeView === "developmentView") {
         await loadDevelopmentEntries();
+      } else if (activeView === "projectsView") {
+        await loadProjectsAdmin();
       } else if (activeView === "editorsView") {
         await loadEditors();
       } else if (activeView === "blogView") {
