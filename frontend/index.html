@@ -218,6 +218,49 @@
             </div>
         </section>
 
+
+        <!-- GITHUB ACTIVITY -->
+        <section id="github-activity" class="content-section github-section">
+            <div class="section-header github-section-header">
+                <div>
+                    <span class="github-eyebrow">OPEN SOURCE / GITHUB</span>
+                    <h2 data-tr="GitHub Aktivitem" data-en="GitHub Activity">GitHub Aktivitem</h2>
+                    <p data-tr="Açık kaynak çalışmalarım ve güncel depo hareketlerim."
+                       data-en="My open-source work and recent repository activity.">
+                        Açık kaynak çalışmalarım ve güncel depo hareketlerim.
+                    </p>
+                </div>
+                <a class="card-link github-profile-link" href="https://github.com/kaanstack" target="_blank" rel="noopener noreferrer"
+                   data-tr="GitHub profilim ↗" data-en="My GitHub profile ↗">GitHub profilim ↗</a>
+            </div>
+            <div id="github-stats" class="github-stats" aria-label="GitHub istatistikleri">
+                <div class="github-stat"><span class="github-stat-value">—</span><span class="github-stat-label" data-tr="Herkese açık depo" data-en="Public repositories">Herkese açık depo</span></div>
+                <div class="github-stat"><span class="github-stat-value">—</span><span class="github-stat-label" data-tr="Kullanılan dil" data-en="Languages used">Kullanılan dil</span></div>
+                <div class="github-stat"><span class="github-stat-value">—</span><span class="github-stat-label" data-tr="Son 30 günde güncellenen" data-en="Updated in the last 30 days">Son 30 günde güncellenen</span></div>
+            </div>
+            <div class="github-content-grid">
+                <div class="github-panel">
+                    <div class="github-panel-heading">
+                        <h3 data-tr="Herkese Açık Depolar" data-en="Public Repositories">Herkese Açık Depolar</h3>
+                        <span class="github-live-label"><span aria-hidden="true"></span> LIVE</span>
+                    </div>
+                    <div id="github-repos" class="github-repo-grid" aria-live="polite">
+                        <p class="github-loading" data-tr="GitHub depoları yükleniyor…" data-en="Loading GitHub repositories…">GitHub depoları yükleniyor…</p>
+                    </div>
+                </div>
+                <div class="github-panel github-activity-panel">
+                    <div class="github-panel-heading">
+                        <h3 data-tr="Son Aktivite" data-en="Recent Activity">Son Aktivite</h3>
+                        <span class="github-live-label"><span aria-hidden="true"></span> LIVE</span>
+                    </div>
+                    <div id="github-events" class="github-events" aria-live="polite">
+                        <p class="github-loading" data-tr="Son hareketler yükleniyor…" data-en="Loading recent activity…">Son hareketler yükleniyor…</p>
+                    </div>
+                </div>
+            </div>
+            <p id="github-status" class="github-status" role="status" aria-live="polite"></p>
+        </section>
+
         <!-- TECH RADAR -->
         <section id="news" class="content-section">
             <div class="section-header news-section-head">
@@ -396,5 +439,6 @@
     </div>
 
     <script src="script.js"></script>
+    <script src="github-integration.js"></script>
 </body>
 </html>
