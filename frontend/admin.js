@@ -31,6 +31,7 @@
   let archiveCount = 0;
   let activeView = "overviewView";
   let searchTimer;
+  let editingDevelopmentId = null;
 
   function setMessage(element, message, isError = false) {
     element.textContent = message;
@@ -454,6 +455,7 @@
     if (viewId === "ticketsView") loadTicketList(false);
     if (viewId === "archiveView") loadTicketList(true);
     if (viewId === "versionsView") loadVersions();
+    if (viewId === "developmentView") loadDevelopmentEntries();
     if (viewId === "accountsView") loadAccounts();
     if (viewId === "editorsView") loadEditors();
     if (viewId === "blogView") {
@@ -686,6 +688,125 @@
     button.disabled = false;
   });
 
+
+  const DEVELOPMENT_CATEGORIES = {
+    learning: "Öğrenme", project: "Proje", event: "Etkinlik",
+    milestone: "Kilometre taşı", experience: "Deneyim"
+  };
+
+  function resetDevelopmentForm() {
+    editingDevelopmentId = null;
+    $("developmentForm").reset();
+    $("developmentDate").value = new Date().toISOString().slice(0, 10);
+    $("developmentPublished").checked = true;
+    $("developmentFormTitle").textContent = "Yeni kayıt ekle";
+    $("saveDevelopmentButton").textContent = "Kaydı ekle";
+    $("cancelDevelopmentEdit").classList.add("hidden");
+  }
+
+  async function loadDevelopmentEntries() {
+    const list = $("developmentAdminList");
+    setMessage($("developmentMessage"), "Gelişim kayıtları yükleniyor…");
+    list.replaceChildren();
+    const { data, error } = await supabase.from("development_entries")
+      .select("id,title,category,summary,details,event_date,link_url,is_published,created_at")
+      .order("event_date", { ascending: false }).order("created_at", { ascending: false });
+    if (error) {
+      list.append(makeElement("div", "card admin-empty", "Gelişim günlüğü tablosu henüz hazır değil. Önce supabase/development-journal.sql dosyasını Supabase SQL Editor'de çalıştır."));
+      setMessage($("developmentMessage"), "Veriler yüklenemedi: " + error.message, true);
+      return;
+    }
+    if (!data?.length) {
+      list.append(makeElement("div", "card admin-empty", "Henüz gelişim kaydı yok. İlk kaydını yukarıdaki formdan ekleyebilirsin."));
+    } else {
+      data.forEach(entry => {
+        const card = makeElement("article", "card admin-development-card");
+        const head = makeElement("div", "admin-development-card-head");
+        const info = document.createElement("div");
+        info.append(
+          makeElement("h3", "", entry.title),
+          makeElement("p", "admin-muted", (DEVELOPMENT_CATEGORIES[entry.category] || entry.category) + " · " +
+            new Intl.DateTimeFormat("tr-TR", { dateStyle: "long" }).format(new Date(entry.event_date)))
+        );
+        const state = makeElement("span", entry.is_published ? "admin-current-badge" : "admin-priority", entry.is_published ? "Yayında" : "Taslak");
+        head.append(info, state);
+        const summary = makeElement("p", "admin-development-summary", entry.summary);
+        const actions = makeElement("div", "admin-development-actions");
+        const edit = makeElement("button", "btn btn-secondary admin-small-button", "Düzenle");
+        edit.type = "button";
+        edit.addEventListener("click", () => {
+          editingDevelopmentId = entry.id;
+          $("developmentTitle").value = entry.title || "";
+          $("developmentCategory").value = entry.category || "learning";
+          $("developmentDate").value = entry.event_date || "";
+          $("developmentSummary").value = entry.summary || "";
+          $("developmentDetails").value = entry.details || "";
+          $("developmentLink").value = entry.link_url || "";
+          $("developmentPublished").checked = Boolean(entry.is_published);
+          $("developmentFormTitle").textContent = "Kaydı düzenle";
+          $("saveDevelopmentButton").textContent = "Değişiklikleri kaydet";
+          $("cancelDevelopmentEdit").classList.remove("hidden");
+          $("developmentForm").scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+        const toggle = makeElement("button", "btn btn-secondary admin-small-button", entry.is_published ? "Yayından kaldır" : "Yayınla");
+        toggle.type = "button";
+        toggle.addEventListener("click", async () => {
+          toggle.disabled = true;
+          const { error: updateError } = await supabase.from("development_entries")
+            .update({ is_published: !entry.is_published }).eq("id", entry.id);
+          if (updateError) setMessage($("developmentMessage"), "Yayın durumu değiştirilemedi: " + updateError.message, true);
+          await loadDevelopmentEntries();
+        });
+        const remove = makeElement("button", "btn btn-danger admin-small-button", "Sil");
+        remove.type = "button";
+        remove.addEventListener("click", async () => {
+          if (!window.confirm('"' + entry.title + '" kaydı kalıcı olarak silinsin mi?')) return;
+          remove.disabled = true;
+          const { error: deleteError } = await supabase.from("development_entries").delete().eq("id", entry.id);
+          if (deleteError) setMessage($("developmentMessage"), "Kayıt silinemedi: " + deleteError.message, true);
+          await loadDevelopmentEntries();
+        });
+        actions.append(edit, toggle, remove);
+        card.append(head, summary, actions);
+        list.append(card);
+      });
+    }
+    setMessage($("developmentMessage"), data?.length ? data.length + " kayıt listelendi." : "Gelişim günlüğü hazır.");
+  }
+
+  $("developmentDate").value = new Date().toISOString().slice(0, 10);
+  $("developmentForm").addEventListener("submit", async event => {
+    event.preventDefault();
+    const button = $("saveDevelopmentButton");
+    const title = $("developmentTitle").value.trim();
+    const category = $("developmentCategory").value;
+    const summary = $("developmentSummary").value.trim();
+    const details = $("developmentDetails").value.trim();
+    const linkUrl = $("developmentLink").value.trim() || null;
+    if (linkUrl && !/^https:\/\//i.test(linkUrl)) {
+      setMessage($("developmentMessage"), "Bağlantı https:// ile başlamalı.", true);
+      return;
+    }
+    button.disabled = true;
+    const payload = {
+      title, category, event_date: $("developmentDate").value,
+      summary, details: details || null, link_url: linkUrl,
+      is_published: $("developmentPublished").checked
+    };
+    const result = editingDevelopmentId
+      ? await supabase.from("development_entries").update(payload).eq("id", editingDevelopmentId)
+      : await supabase.from("development_entries").insert(payload);
+    button.disabled = false;
+    if (result.error) {
+      setMessage($("developmentMessage"), "Kayıt kaydedilemedi: " + result.error.message, true);
+      return;
+    }
+    resetDevelopmentForm();
+    setMessage($("developmentMessage"), "Gelişim kaydı kaydedildi.");
+    await loadDevelopmentEntries();
+  });
+  $("cancelDevelopmentEdit").addEventListener("click", resetDevelopmentForm);
+
   $("loginForm").addEventListener("submit", async event => {
     event.preventDefault();
     setMessage(loginMessage, "");
@@ -729,6 +850,8 @@
         await Promise.all([loadStats(), loadOverview()]);
       } else if (activeView === "accountsView") {
         await Promise.all([loadStats(), loadAccounts()]);
+      } else if (activeView === "developmentView") {
+        await loadDevelopmentEntries();
       } else if (activeView === "editorsView") {
         await loadEditors();
       } else if (activeView === "blogView") {
