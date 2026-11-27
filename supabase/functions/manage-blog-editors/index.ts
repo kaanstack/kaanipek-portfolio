@@ -53,21 +53,38 @@ Deno.serve(async (req) => {
         return json({ error: "Yönetici hesabını editör olarak davet edemezsin." }, 400);
       }
 
-      const { data, error } = await admin.auth.admin.inviteUserByEmail(email, {
-        redirectTo: `${siteUrl}/invite-accept.html`,
-      });
-      if (error) return json({ error: error.message }, 400);
+      // Reuse an existing Auth account instead of trying to invite the same email twice.
+      const { data: usersData, error: usersError } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+      if (usersError) return json({ error: usersError.message }, 500);
+      const existingUser = (usersData.users || []).find((item) =>
+        (item.email || "").toLowerCase() === email
+      );
+
+      let editorUser = existingUser;
+      let inviteSent = false;
+      if (!editorUser) {
+        const { data, error } = await admin.auth.admin.inviteUserByEmail(email, {
+          redirectTo: `${siteUrl}/invite-accept.html`,
+        });
+        if (error) return json({ error: error.message }, 400);
+        editorUser = data.user;
+        inviteSent = true;
+      }
 
       const { error: roleError } = await admin.from("blog_user_roles").upsert({
-        user_id: data.user.id,
+        user_id: editorUser.id,
         role: "editor",
         granted_by: user.id,
       }, { onConflict: "user_id" });
       if (roleError) {
-        // Do not delete the Auth account: it may have existed before this invite.
-        return json({ error: "Davet e-postası gönderildi ancak editör yetkisi verilemedi: " + roleError.message }, 500);
+        return json({ error: "Editör hesabı bulundu ancak yetki verilemedi: " + roleError.message }, 500);
       }
-      return json({ message: "Davet e-postası gönderildi. Kullanıcı bağlantıdan şifresini belirleyebilir." });
+
+      return json({
+        message: inviteSent
+          ? "Davet e-postası gönderildi. Kullanıcı bağlantıdan şifresini belirleyebilir."
+          : "Bu e-posta zaten kayıtlı. Mevcut hesap yeniden editör olarak yetkilendirildi; yeni davet gerekmez.",
+      });
     }
 
     if (action === "resend") {
