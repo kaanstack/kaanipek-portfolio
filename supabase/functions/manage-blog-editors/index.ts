@@ -89,7 +89,7 @@ Deno.serve(async (req) => {
 
     if (action === "resend") {
       const email = String(body.email || "").trim().toLowerCase();
-      if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || email.length > 254) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) {
         return json({ error: "Geçerli bir e-posta adresi gir." }, 400);
       }
 
