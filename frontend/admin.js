@@ -489,6 +489,20 @@
             makeElement("h3", "", editor.email || "E-posta bilgisi bulunamadı"),
             makeElement("p", "admin-muted", "Durum: " + (editor.confirmed ? "E-posta doğrulandı" : "Davet bekliyor"))
           );
+          const actions = makeElement("div", "admin-account-actions");
+          const resend = makeElement("button", "btn btn-secondary admin-small-button", "Yeni bağlantı gönder");
+          resend.type = "button";
+          resend.addEventListener("click", async () => {
+            resend.disabled = true;
+            try {
+              const result = await callEditorManager("resend", { email: editor.email });
+              setMessage($("editorsMessage"), result.message || "Yeni bağlantı gönderildi.");
+            } catch (error) {
+              setMessage($("editorsMessage"), "Yeni bağlantı gönderilemedi: " + error.message, true);
+            } finally {
+              resend.disabled = false;
+            }
+          });
           const revoke = makeElement("button", "btn btn-danger admin-small-button", "Yetkiyi kaldır");
           revoke.type = "button";
           revoke.addEventListener("click", async () => {
@@ -503,7 +517,8 @@
               revoke.disabled = false;
             }
           });
-          card.append(details, revoke);
+          actions.append(resend, revoke);
+          card.append(details, actions);
           list.append(card);
         });
       }
