@@ -14,6 +14,7 @@
   if (!reposEl || !eventsEl || !statsEl) return;
 
   let githubData = null;
+  let isLoading = false;
   const language = () => document.documentElement.lang === "en" ? "en" : "tr";
   const copy = (tr, en) => language() === "en" ? en : tr;
 
@@ -187,8 +188,12 @@
     renderEvents(events);
   }
 
-  async function init() {
-    const cached = readCache();
+  async function loadGitHubData(force = false) {
+    if (isLoading) return;
+    isLoading = true;
+    const refreshButton = $("github-refresh");
+    if (refreshButton) refreshButton.disabled = true;
+    const cached = force ? null : readCache();
     if (cached) {
       githubData = cached;
       render(cached);
@@ -203,7 +208,7 @@
       githubData = { profile, repos, events };
       writeCache(githubData);
       render(githubData);
-      if (statusEl) statusEl.textContent = "";
+      if (statusEl) statusEl.textContent = copy("Son güncelleme: ", "Last updated: ") + new Intl.DateTimeFormat(language() === "en" ? "en-GB" : "tr-TR", { hour: "2-digit", minute: "2-digit" }).format(new Date());
     } catch (_) {
       if (!githubData) {
         reposEl.replaceChildren(makeElement("p", "github-empty", copy(
@@ -218,10 +223,22 @@
       } else if (statusEl) {
         statusEl.textContent = copy("Gösterilen bilgiler son başarılı yüklemeden alınmıştır.", "Showing data from the last successful load.");
       }
+    } finally {
+      isLoading = false;
+      if (refreshButton) refreshButton.disabled = false;
     }
   }
 
-  document.addEventListener("DOMContentLoaded", init);
+  document.addEventListener("DOMContentLoaded", () => {
+    loadGitHubData();
+    $("github-refresh")?.addEventListener("click", () => loadGitHubData(true));
+    window.setInterval(() => {
+      if (document.visibilityState === "visible") loadGitHubData(true);
+    }, CACHE_TTL);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") loadGitHubData();
+    });
+  });
   document.querySelectorAll(".lang-btn").forEach((button) => {
     button.addEventListener("click", () => {
       if (githubData) render(githubData);
