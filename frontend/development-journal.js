@@ -30,6 +30,7 @@
     const date = new Date(value + "T12:00:00");
     return new Intl.DateTimeFormat(isEnglish() ? "en-GB" : "tr-TR", { day: "numeric", month: "long", year: "numeric" }).format(date);
   };
+  let cachedEntries = [];
   function render(entries) {
     root.replaceChildren();
     if (!entries.length) {
@@ -74,18 +75,14 @@
         : "Gelişim günlüğü yakında burada olacak."));
       return;
     }
-    render(data || []);
+    cachedEntries = data || [];
+    render(cachedEntries);
   }
-  document.addEventListener("DOMContentLoaded", load);
+  document.addEventListener("DOMContentLoaded", async () => {
+    await load();
+    root.dataset.loaded = "true";
+  }, { once: true });
   document.querySelectorAll(".lang-btn").forEach(button => button.addEventListener("click", () => {
-    const current = root.dataset.loaded === "true";
-    if (current) load();
+    if (root.dataset.loaded === "true") render(cachedEntries);
   }));
-  const observer = new MutationObserver(() => {
-    if (root.dataset.loaded === "true") load();
-  });
-  observer.observe(document.documentElement, { attributes: true, attributeFilter: ["lang"] });
-  const originalLoad = load;
-  async function initialLoad() { await originalLoad(); root.dataset.loaded = "true"; }
-  document.addEventListener("DOMContentLoaded", initialLoad, { once: true });
 })();
