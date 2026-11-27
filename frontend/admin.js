@@ -43,6 +43,12 @@
     logoutButton.classList.toggle("hidden", !visible);
   }
 
+  function announceAdminSession(session) {
+    if (session?.user?.id === ADMIN_UID) {
+      window.dispatchEvent(new CustomEvent("vki:admin-authorized", { detail: { userId: session.user.id } }));
+    }
+  }
+
   async function routeAuthorizedSession(session) {
     if (!session?.user) return "none";
     if (session.user.id === ADMIN_UID) return "admin";
@@ -697,6 +703,7 @@
     else {
       const access = await routeAuthorizedSession(data.session);
       if (access === "admin") {
+        announceAdminSession(data.session);
         showDashboard(true);
         try {
           await Promise.all([loadStats(), loadOverview()]);
@@ -754,6 +761,7 @@
     if (error) throw error;
     const access = await routeAuthorizedSession(data.session);
     if (access === "admin") {
+      announceAdminSession(data.session);
       showDashboard(true);
       await Promise.all([loadStats(), loadOverview()]);
     }
