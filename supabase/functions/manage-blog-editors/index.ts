@@ -116,6 +116,33 @@ Deno.serve(async (req) => {
       return json({ message: "Yeni şifre belirleme bağlantısı e-posta adresine gönderildi." });
     }
 
+    if (action === "set-editor-password") {
+      const editorId = "0f3f8a77-4b84-4d69-8d11-fad26f8d4630";
+      const editorEmail = "ipekkaan42@gmail.com";
+      const password = typeof body.password === "string" ? body.password : "";
+      if (password.length < 10 || password.length > 128) {
+        return json({ error: "Şifre 10-128 karakter arasında olmalı." }, 400);
+      }
+
+      const { data: role, error: roleError } = await admin
+        .from("blog_user_roles")
+        .select("user_id")
+        .eq("user_id", editorId)
+        .eq("role", "editor")
+        .maybeSingle();
+      if (roleError) return json({ error: roleError.message }, 500);
+      if (!role) return json({ error: "Hedef hesap editör olarak yetkilendirilmemiş." }, 404);
+
+      const { data: editorData, error: editorError } = await admin.auth.admin.getUserById(editorId);
+      if (editorError || (editorData.user?.email || "").toLowerCase() !== editorEmail) {
+        return json({ error: "Hedef editör hesabı doğrulanamadı." }, 404);
+      }
+
+      const { error: updateError } = await admin.auth.admin.updateUserById(editorId, { password });
+      if (updateError) return json({ error: updateError.message }, 400);
+      return json({ message: "Editör hesabının şifresi güncellendi." });
+    }
+
     if (action === "list") {
       const { data: roles, error: rolesError } = await admin
         .from("blog_user_roles").select("user_id,created_at").order("created_at", { ascending: false });
