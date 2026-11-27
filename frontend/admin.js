@@ -548,6 +548,34 @@
     }
   });
 
+  $("editorPasswordForm").addEventListener("submit", async event => {
+    event.preventDefault();
+    const password = $("editorPassword").value;
+    const confirmation = $("editorPasswordConfirm").value;
+    const button = $("editorPasswordButton");
+    if (password.length < 10 || password.length > 128) {
+      setMessage($("editorsMessage"), "Şifre 10-128 karakter arasında olmalı.", true);
+      return;
+    }
+    if (password !== confirmation) {
+      setMessage($("editorsMessage"), "Şifreler eşleşmiyor.", true);
+      return;
+    }
+    if (!window.confirm("Yalnızca ipekkaan42@gmail.com hesabının şifresi değiştirilecek. Devam edilsin mi?")) return;
+    button.disabled = true;
+    button.textContent = "Güncelleniyor…";
+    try {
+      const result = await callEditorManager("set-editor-password", { password });
+      $("editorPasswordForm").reset();
+      setMessage($("editorsMessage"), result.message || "Editör şifresi güncellendi.");
+    } catch (error) {
+      setMessage($("editorsMessage"), "Şifre güncellenemedi: " + error.message, true);
+    } finally {
+      button.disabled = false;
+      button.textContent = "Editör şifresini güncelle";
+    }
+  });
+
   async function loadVersions() {
     setMessage($("versionsMessage"), "Sürümler yükleniyor…");
     const list = $("versionList");
