@@ -176,3 +176,52 @@
 
 .admin-blog-post-actions { display:flex; flex:0 0 auto; gap:.5rem; flex-wrap:wrap; }
 @media(max-width:600px) { .admin-blog-post-actions { flex-direction:column; } }
+
+
+/* Blog review queue — clear hierarchy, status and approval actions */
+.admin-blog-list { gap: .85rem; }
+.admin-blog-post-row {
+  align-items: center;
+  padding: 1.05rem 1.15rem;
+  border-radius: 15px;
+  background: linear-gradient(135deg, rgba(255,255,255,.035), rgba(255,255,255,.012));
+  transition: border-color .18s ease, background .18s ease, transform .18s ease;
+}
+.admin-blog-post-row:hover { border-color: rgba(91,214,220,.28); background: rgba(255,255,255,.045); }
+.admin-blog-post-row.is-pending {
+  border-color: rgba(245, 183, 76, .42);
+  background: linear-gradient(110deg, rgba(245,183,76,.085), rgba(255,255,255,.018) 58%);
+}
+.admin-blog-post-info { display: grid; gap: .35rem; }
+.admin-blog-post-info h3 { font-size: 1rem; line-height: 1.4; }
+.admin-blog-post-info p { font-size: .78rem; }
+.admin-blog-status {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: .35rem;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  padding: .22rem .58rem;
+  color: var(--text-secondary);
+  background: rgba(255,255,255,.035);
+  font-size: .7rem;
+  font-weight: 650;
+  letter-spacing: .01em;
+}
+.admin-blog-status-pending { color: #f3c66f; border-color: rgba(245,183,76,.32); background: rgba(245,183,76,.09); }
+.admin-blog-status-published { color: #70d8ad; border-color: rgba(80,200,145,.25); background: rgba(80,200,145,.075); }
+.admin-blog-status-draft { color: var(--text-secondary); }
+.admin-blog-status-changes_requested { color: #e5a0a0; border-color: rgba(220,100,100,.25); background: rgba(220,100,100,.075); }
+.admin-blog-post-actions { justify-content: flex-end; align-items: center; }
+.admin-blog-post-actions .btn { white-space: nowrap; }
+.admin-blog-post-actions .btn-primary { box-shadow: 0 5px 18px rgba(80,190,170,.12); }
+@media(max-width:760px) {
+  .admin-blog-post-row { align-items: stretch; flex-direction: column; gap: .85rem; }
+  .admin-blog-post-actions { justify-content: flex-start; flex-direction: row; }
+  .admin-blog-post-actions .btn { flex: 1 1 auto; }
+}
+@media(max-width:480px) {
+  .admin-blog-post-actions { display: grid; grid-template-columns: 1fr 1fr; }
+  .admin-blog-post-actions .btn-primary { grid-column: 1 / -1; }
+}
