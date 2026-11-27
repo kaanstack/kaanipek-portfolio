@@ -186,58 +186,10 @@
                     Altyapı, kurumsal yazılım ve sistem programlama alanında geliştirdiğim çalışmalar
                 </p>
             </div>
-
-            <div class="grid-three">
-                <article class="card project-card">
-                    <div class="card-top">
-                        <span class="tag-pill">Cloud & DNS</span>
-                        <a href="https://kaanipek.net.tr" class="card-link">Canlı ↗</a>
-                    </div>
-                    <h3>kaanipek.net.tr Bulut & Ağ Mimarisi</h3>
-                    <p class="card-desc"
-                       data-tr="Metunic alan adı yönetimi, Cloudflare Nameserver devri, uçtan uca TLS şifrelemesi, özel kurumsal e-posta yönlendirme (MX/SPF) ve sıfır sunucu maliyetli statik CDN dağıtım altyapısı."
-                       data-en="Metunic domain management, Cloudflare Nameserver delegation, end-to-end TLS encryption, custom email routing (MX/SPF), and zero-server-cost static CDN deployment architecture.">
-                        Metunic alan adı yönetimi, Cloudflare Nameserver devri, uçtan uca TLS şifrelemesi, özel kurumsal e-posta yönlendirme (MX/SPF) ve sıfır sunucu maliyetli statik CDN dağıtım altyapısı.
-                    </p>
-                    <div class="tech-mini">
-                        <span>Cloudflare</span> • <span>DNS/TLS</span> • <span>Static CDN</span>
-                    </div>
-                </article>
-
-                <article class="card project-card">
-                    <div class="card-top">
-                        <span class="tag-pill">Supabase</span>
-                        <span class="muted-date">Backend</span>
-                    </div>
-                    <h3 data-tr="Ticket & Talep Yönetim Sistemi" data-en="Ticket & Request Management System">Ticket & Talep Yönetim Sistemi</h3>
-                    <p class="card-desc"
-                       data-tr="Ziyaretçilerin talep oluşturabildiği, takip numarasıyla durum sorgulayabildiği ve yönetim panelinden süreçlerin takip edilebildiği uçtan uca talep sistemi."
-                       data-en="An end-to-end request system where visitors can submit tickets and track their status, while requests are managed through a private admin panel.">
-                        Ziyaretçilerin talep oluşturabildiği, takip numarasıyla durum sorgulayabildiği ve yönetim panelinden süreçlerin takip edilebildiği uçtan uca talep sistemi.
-                    </p>
-                    <div class="tech-mini">
-                        <span>JavaScript</span> • <span>Supabase</span> • <span>PostgreSQL</span>
-                    </div>
-                </article>
-
-                <article class="card project-card">
-                    <div class="card-top">
-                        <span class="tag-pill">Tech Radar</span>
-                        <a href="/github" target="_blank" rel="noopener" class="card-link">GitHub ↗</a>
-                    </div>
-                    <h3 data-tr="Tech Radar — Teknoloji Gündemi" data-en="Tech Radar — Technology Briefing">Tech Radar — Teknoloji Gündemi</h3>
-                    <p class="card-desc"
-                       data-tr="Hacker News verilerini kullanarak teknoloji haberlerini kategorilere ayıran, başlıkları Türkçeleştiren ve detay sayfalarında kaynak bağlantıları sunan haber akışı."
-                       data-en="A technology news feed using Hacker News data, with category filters, Turkish title translation, and source links on detail pages.">
-                        Hacker News verilerini kullanarak teknoloji haberlerini kategorilere ayıran, başlıkları Türkçeleştiren ve detay sayfalarında kaynak bağlantıları sunan haber akışı.
-                    </p>
-                    <div class="tech-mini">
-                        <span>Hacker News API</span> • <span>JavaScript</span> • <span>REST</span>
-                    </div>
-                </article>
+            <div id="projects-grid" class="grid-three projects-grid" aria-live="polite">
+                <p class="projects-loading" data-tr="Projeler yükleniyor…" data-en="Loading projects…">Projeler yükleniyor…</p>
             </div>
         </section>
-
 
         <!-- GITHUB ACTIVITY -->
         <section id="github-activity" class="content-section github-section">
@@ -465,5 +417,6 @@
     <script src="github-integration.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="development-journal.js"></script>
+    <script src="projects.js"></script>
 </body>
 </html>
