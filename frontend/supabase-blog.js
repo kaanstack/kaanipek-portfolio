@@ -288,24 +288,20 @@
           const title = document.createElement("h3");
           title.textContent = post.title;
           const meta = document.createElement("p");
-          const statusLabel = ({ draft: "Taslak", pending: "Onay bekliyor", published: "Yayında", changes_requested: "Düzenleme istendi" })[post.status] || "Yayında";
-          meta.textContent = [post.category, post.date, statusLabel, (isEditor && post.review_note) ? "Not: " + post.review_note : ""].filter(Boolean).join(" · ");
-          info.append(title, meta);
+          meta.textContent = [post.category, post.date].filter(Boolean).join(" · ");
+          const statusLabels = { draft: "Taslak", pending: "Onay bekliyor", published: "Yayında", changes_requested: "Düzenleme istendi" };
+          const statusBadge = document.createElement("span");
+          statusBadge.className = "admin-blog-status admin-blog-status-" + (statusLabels[post.status] ? post.status : "published");
+          statusBadge.textContent = statusLabels[post.status] || "Yayında";
+          info.append(title, meta, statusBadge);
+          if (post.status === "pending") row.classList.add("is-pending");
           const actions = document.createElement("div");
           actions.className = "admin-blog-post-actions";
-          if (isAdmin || ["draft", "pending", "changes_requested"].includes(post.status)) {
-            const edit = document.createElement("button");
-            edit.type = "button";
-            edit.className = "btn btn-secondary admin-small-button";
-            edit.textContent = "Düzenle";
-            edit.addEventListener("click", () => beginEdit(post));
-            actions.append(edit);
-          }
           if (isAdmin && post.status === "pending") {
             const publish = document.createElement("button");
             publish.type = "button";
             publish.className = "btn btn-primary admin-small-button";
-            publish.textContent = "Yayınla";
+            publish.textContent = "Onayla ve yayımla";
             publish.addEventListener("click", () => publishPost(post));
             const revise = document.createElement("button");
             revise.type = "button";
@@ -313,6 +309,14 @@
             revise.textContent = "Düzenleme iste";
             revise.addEventListener("click", () => requestChanges(post));
             actions.append(publish, revise);
+          }
+          if (isAdmin || ["draft", "pending", "changes_requested"].includes(post.status)) {
+            const edit = document.createElement("button");
+            edit.type = "button";
+            edit.className = "btn btn-secondary admin-small-button";
+            edit.textContent = "Düzenle";
+            edit.addEventListener("click", () => beginEdit(post));
+            actions.append(edit);
           }
           if (isAdmin) {
             const remove = document.createElement("button");
@@ -432,6 +436,22 @@
     }
 
     window.addEventListener("vki:refresh-blog", () => loadPosts().catch(error => setStatus("Blog yenilenemedi: " + error.message, true)));
+
+    window.addEventListener("vki:admin-authorized", async (event) => {
+      const userId = event.detail?.userId;
+      if (userId !== ADMIN_UID || !supabaseClient) return;
+      currentUserId = userId;
+      isAdmin = true;
+      isEditor = false;
+      updateAdminUI();
+      try {
+        await loadPosts();
+        setStatus("Yönetici oturumu doğrulandı. Bekleyen yazılar incelemeye hazır.");
+      } catch (error) {
+        setStatus("Blog yönetimi yenilenemedi: " + error.message, true);
+      }
+    });
+
 
     async function requestChanges(post) {
       if (!isAdmin) return;
