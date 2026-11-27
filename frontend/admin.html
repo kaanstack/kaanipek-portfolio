@@ -200,6 +200,15 @@
           </div>
           <button class="btn btn-primary" id="editorInviteButton" type="submit">Davet gönder</button>
         </form>
+        <form id="editorPasswordForm" class="card admin-account-form">
+          <h3>Mevcut editörün şifresini belirle</h3>
+          <p class="admin-muted">Yalnızca ipekkaan42@gmail.com hesabı için geçerlidir. E-posta gönderilmez.</p>
+          <div class="admin-account-fields">
+            <label>Yeni şifre<input id="editorPassword" type="password" autocomplete="new-password" minlength="10" maxlength="128" required></label>
+            <label>Yeni şifreyi tekrar gir<input id="editorPasswordConfirm" type="password" autocomplete="new-password" minlength="10" maxlength="128" required></label>
+          </div>
+          <button class="btn btn-primary" id="editorPasswordButton" type="submit">Editör şifresini güncelle</button>
+        </form>
         <p id="editorsMessage" class="admin-message" role="status" aria-live="polite"></p>
         <div id="editorList" class="admin-account-list" aria-live="polite"></div>
       </section>
