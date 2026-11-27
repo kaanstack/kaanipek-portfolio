@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
       let inviteSent = false;
       if (!editorUser) {
         const { data, error } = await admin.auth.admin.inviteUserByEmail(email, {
-          redirectTo: `${siteUrl}/invite-accept.html`,
+          redirectTo: `${siteUrl}/invite-accept.html?email=${encodeURIComponent(email)}`,
         });
         if (error) return json({ error: error.message }, 400);
         editorUser = data.user;
