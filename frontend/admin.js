@@ -647,7 +647,10 @@
       email: $("adminEmail").value.trim(),
       password: $("adminPassword").value
     });
-    if (error) setMessage(loginMessage, "Giriş başarısız. E-posta veya şifreni kontrol et.", true);
+    if (error) {
+      const details = [error.message, error.code ? "Kod: " + error.code : "", error.status ? "HTTP: " + error.status : ""].filter(Boolean).join(" · ");
+      setMessage(loginMessage, "Giriş başarısız: " + details, true);
+    }
     else {
       const access = await routeAuthorizedSession(data.session);
       if (access === "admin") {
