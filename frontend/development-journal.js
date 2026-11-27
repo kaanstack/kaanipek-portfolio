@@ -78,10 +78,17 @@
     cachedEntries = data || [];
     render(cachedEntries);
   }
-  document.addEventListener("DOMContentLoaded", async () => {
+  async function initializeJournal() {
     await load();
     root.dataset.loaded = "true";
-  }, { once: true });
+  }
+  // This script is loaded at the end of index.html, so DOMContentLoaded may
+  // already have fired. Initialize immediately in that case.
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initializeJournal, { once: true });
+  } else {
+    initializeJournal();
+  }
   document.querySelectorAll(".lang-btn").forEach(button => button.addEventListener("click", () => {
     if (root.dataset.loaded === "true") render(cachedEntries);
   }));
