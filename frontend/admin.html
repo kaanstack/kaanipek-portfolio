@@ -53,6 +53,7 @@
         <button class="admin-tab" type="button" data-view="ticketsView">Destek talepleri</button>
         <button class="admin-tab" type="button" data-view="archiveView">Arşiv</button>
         <button class="admin-tab" type="button" data-view="versionsView">Sürümler</button>
+        <button class="admin-tab" type="button" data-view="developmentView">Gelişim günlüğü</button>
         <button class="admin-tab" type="button" data-view="blogView">Blog yönetimi</button>
         <button class="admin-tab" type="button" data-view="editorsView">Editör yönetimi</button>
         <button class="admin-tab" type="button" data-view="accountsView">Hesaplarım</button>
@@ -147,6 +148,37 @@
         <p id="versionsMessage" class="admin-message" role="status" aria-live="polite"></p>
         <div id="versionList" class="admin-version-list"></div>
       </section>
+
+      <section id="developmentView" class="admin-panel-view hidden">
+        <div class="admin-section-heading">
+          <div><h2>Gelişim günlüğü</h2><p class="admin-muted">Ana sayfada yayınlanacak öğrenme notlarını, etkinlikleri ve kilometre taşlarını yönet.</p></div>
+        </div>
+        <form id="developmentForm" class="card admin-development-form">
+          <h3 id="developmentFormTitle">Yeni kayıt ekle</h3>
+          <div class="admin-development-fields">
+            <label>Başlık<input id="developmentTitle" type="text" maxlength="140" required placeholder="Örn. İlk DevOps laboratuvarım"></label>
+            <label>Kategori<select id="developmentCategory" required>
+              <option value="learning">Öğrenme</option>
+              <option value="project">Proje</option>
+              <option value="event">Etkinlik</option>
+              <option value="milestone">Kilometre taşı</option>
+              <option value="experience">Deneyim</option>
+            </select></label>
+            <label>Tarih<input id="developmentDate" type="date" required></label>
+          </div>
+          <label>Kısa özet<textarea id="developmentSummary" rows="2" maxlength="280" required placeholder="Bu gelişmeyi bir veya iki cümleyle anlat."></textarea></label>
+          <label>Detay <span class="admin-muted">(isteğe bağlı)</span><textarea id="developmentDetails" rows="4" maxlength="1800" placeholder="Neler öğrendin, hangi araçları kullandın?"></textarea></label>
+          <label>İlgili bağlantı <span class="admin-muted">(isteğe bağlı)</span><input id="developmentLink" type="url" maxlength="500" placeholder="https://..."></label>
+          <label class="admin-development-publish"><input id="developmentPublished" type="checkbox" checked> Ana sayfada yayınla</label>
+          <div class="admin-development-actions">
+            <button class="btn btn-primary" id="saveDevelopmentButton" type="submit">Kaydı ekle</button>
+            <button class="btn btn-secondary hidden" id="cancelDevelopmentEdit" type="button">Düzenlemeyi iptal et</button>
+          </div>
+        </form>
+        <p id="developmentMessage" class="admin-message" role="status" aria-live="polite"></p>
+        <div id="developmentAdminList" class="admin-development-list" aria-live="polite"></div>
+      </section>
+
       <section id="blogView" class="admin-panel-view hidden">
         <div class="admin-section-heading admin-blog-heading">
           <div><h2>Blog yönetimi</h2><p class="admin-muted">Yazı ekle veya mevcut bir yazıyı düzenle.</p></div>
