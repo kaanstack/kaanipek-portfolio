@@ -110,7 +110,7 @@ Deno.serve(async (req) => {
         auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
       });
       const { error } = await mailer.auth.resetPasswordForEmail(email, {
-        redirectTo: `${siteUrl}/invite-accept.html`,
+        redirectTo: `${siteUrl}/invite-accept.html?email=${encodeURIComponent(email)}`,
       });
       if (error) return json({ error: error.message }, 400);
       return json({ message: "Yeni şifre belirleme bağlantısı e-posta adresine gönderildi." });
