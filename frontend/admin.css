@@ -245,3 +245,21 @@
 .admin-development-card-head p,.admin-development-summary { margin:0; color:var(--text-secondary); font-size:.84rem; }
 .admin-development-summary { margin:.85rem 0; white-space:pre-wrap; }
 @media(max-width:760px) { .admin-development-fields { grid-template-columns:1fr; } .admin-development-card-head { flex-direction:column; } }
+
+/* Portfolio project manager */
+.admin-project-form { display:grid; gap:.85rem; padding:1.2rem; margin:1rem 0; }
+.admin-project-form h3 { margin:0; }
+.admin-project-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.8rem; }
+.admin-project-fields label,.admin-project-form > label { display:grid; gap:.4rem; color:var(--text-secondary); font-size:.84rem; min-width:0; }
+.admin-project-fields input,.admin-project-fields textarea { width:100%; min-width:0; padding:.7rem .8rem; color:#e8eef8; color-scheme:dark; background:#0d1422; border:1px solid var(--border-color); border-radius:10px; font:inherit; }
+.admin-project-wide { grid-column:1/-1; }
+.admin-project-publish { display:flex !important; align-items:center; gap:.55rem !important; }
+.admin-project-publish input { width:17px; height:17px; }
+.admin-project-actions { display:flex; flex-wrap:wrap; gap:.55rem; }
+.admin-project-list { display:grid; gap:.8rem; }
+.admin-project-card { padding:1.1rem 1.2rem; min-width:0; }
+.admin-project-card-head { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; }
+.admin-project-card h3 { margin:0 0 .25rem; font-size:1rem; overflow-wrap:anywhere; }
+.admin-project-card-head p,.admin-project-summary { margin:0; color:var(--text-secondary); font-size:.84rem; }
+.admin-project-summary { margin:.85rem 0; overflow-wrap:anywhere; }
+@media(max-width:760px) { .admin-project-fields { grid-template-columns:1fr; } .admin-project-wide { grid-column:auto; } .admin-project-card-head { flex-direction:column; } }
