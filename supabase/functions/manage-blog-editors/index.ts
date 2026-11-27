@@ -70,6 +70,35 @@ Deno.serve(async (req) => {
       return json({ message: "Davet e-postası gönderildi. Kullanıcı bağlantıdan şifresini belirleyebilir." });
     }
 
+    if (action === "resend") {
+      const email = String(body.email || "").trim().toLowerCase();
+      if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || email.length > 254) {
+        return json({ error: "Geçerli bir e-posta adresi gir." }, 400);
+      }
+
+      const { data: roles, error: rolesError } = await admin
+        .from("blog_user_roles").select("user_id");
+      if (rolesError) return json({ error: rolesError.message }, 500);
+
+      const { data: usersData, error: usersError } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+      if (usersError) return json({ error: usersError.message }, 500);
+
+      const editorIds = new Set((roles || []).map((role) => role.user_id));
+      const editor = (usersData.users || []).find((item) =>
+        editorIds.has(item.id) && (item.email || "").toLowerCase() === email
+      );
+      if (!editor) return json({ error: "Bu e-posta adresi editör listesinde bulunamadı." }, 404);
+
+      const mailer = createClient(supabaseUrl, anonKey, {
+        auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+      });
+      const { error } = await mailer.auth.resetPasswordForEmail(email, {
+        redirectTo: `${siteUrl}/invite-accept.html`,
+      });
+      if (error) return json({ error: error.message }, 400);
+      return json({ message: "Yeni şifre belirleme bağlantısı e-posta adresine gönderildi." });
+    }
+
     if (action === "list") {
       const { data: roles, error: rolesError } = await admin
         .from("blog_user_roles").select("user_id,created_at").order("created_at", { ascending: false });
