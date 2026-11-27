@@ -54,6 +54,7 @@
         <button class="admin-tab" type="button" data-view="archiveView">Arşiv</button>
         <button class="admin-tab" type="button" data-view="versionsView">Sürümler</button>
         <button class="admin-tab" type="button" data-view="developmentView">Gelişim günlüğü</button>
+        <button class="admin-tab" type="button" data-view="projectsView">Projeler</button>
         <button class="admin-tab" type="button" data-view="blogView">Blog yönetimi</button>
         <button class="admin-tab" type="button" data-view="editorsView">Editör yönetimi</button>
         <button class="admin-tab" type="button" data-view="accountsView">Hesaplarım</button>
@@ -177,6 +178,33 @@
         </form>
         <p id="developmentMessage" class="admin-message" role="status" aria-live="polite"></p>
         <div id="developmentAdminList" class="admin-development-list" aria-live="polite"></div>
+      </section>
+
+      <section id="projectsView" class="admin-panel-view hidden">
+        <div class="admin-section-heading">
+          <div><h2>Proje yönetimi</h2><p class="admin-muted">Ana sayfada gösterilecek projeleri ekle, düzenle ve yayın durumlarını yönet.</p></div>
+        </div>
+        <form id="projectForm" class="card admin-project-form">
+          <h3 id="projectFormTitle">Yeni proje ekle</h3>
+          <div class="admin-project-fields">
+            <label>Başlık (Türkçe)<input id="projectTitleTr" type="text" maxlength="140" required></label>
+            <label>Başlık (English)<input id="projectTitleEn" type="text" maxlength="140" required></label>
+            <label>Kart etiketi<input id="projectCategory" type="text" maxlength="50" required placeholder="Cloud & DNS"></label>
+            <label class="admin-project-wide">Açıklama (Türkçe)<textarea id="projectDescriptionTr" rows="3" maxlength="600" required></textarea></label>
+            <label class="admin-project-wide">Description (English)<textarea id="projectDescriptionEn" rows="3" maxlength="600" required></textarea></label>
+            <label class="admin-project-wide">Teknolojiler <span class="admin-muted">(virgülle ayır)</span><input id="projectTechnologies" type="text" maxlength="300" required placeholder="JavaScript, Supabase, PostgreSQL"></label>
+            <label>GitHub bağlantısı <span class="admin-muted">(isteğe bağlı)</span><input id="projectGithubUrl" type="url" maxlength="500" placeholder="https://github.com/..."></label>
+            <label>Canlı demo bağlantısı <span class="admin-muted">(isteğe bağlı)</span><input id="projectLiveUrl" type="url" maxlength="500" placeholder="https://..."></label>
+            <label>Sıralama<input id="projectSortOrder" type="number" min="0" max="9999" value="0" required></label>
+          </div>
+          <label class="admin-project-publish"><input id="projectPublished" type="checkbox" checked> Ana sayfada yayınla</label>
+          <div class="admin-project-actions">
+            <button class="btn btn-primary" id="saveProjectButton" type="submit">Projeyi kaydet</button>
+            <button class="btn btn-secondary hidden" id="cancelProjectEdit" type="button">Düzenlemeyi iptal et</button>
+          </div>
+        </form>
+        <p id="projectsMessage" class="admin-message" role="status" aria-live="polite"></p>
+        <div id="projectAdminList" class="admin-project-list" aria-live="polite"></div>
       </section>
 
       <section id="blogView" class="admin-panel-view hidden">
