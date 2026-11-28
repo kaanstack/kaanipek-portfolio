@@ -431,7 +431,7 @@
           makeElement("strong", "", post.title || "Başlıksız yazı"),
           makeElement("span", "admin-muted", formatDate(post.created_at))
         );
-        const link = makeElement("a", "admin-overview-link", "Görüntüle ↗");
+        const link = makeElement("a", "admin-overview-link", `“${post.title || "Başlıksız yazı"}” yazısını görüntüle ↗`);
         link.href = "blog.html?slug=" + encodeURIComponent(post.slug || "");
         link.target = "_blank";
         link.rel = "noopener noreferrer";
@@ -1006,7 +1006,8 @@
     setMessage(loginMessage, "Supabase istemcisi yüklenemedi. Sayfayı yenileyip tekrar dene.", true);
     return;
   }
-  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  supabase = window.vkiSupabaseClient || window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  window.vkiSupabaseClient = supabase;
   supabase.auth.getSession().then(async ({ data, error }) => {
     if (error) throw error;
     const access = await routeAuthorizedSession(data.session);

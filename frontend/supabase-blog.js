@@ -125,8 +125,11 @@
         setMeta("og:title", "Blog — Veysel Kaan İpek", "property");
         setMeta("og:description", description, "property");
         setMeta("og:url", SITE_URL + "/blog.html", "property");
-        setMeta("og:image", "", "property");
+        const fallbackImage = SITE_URL + "/favicon.png";
+        setMeta("og:image", fallbackImage, "property");
+        setMeta("og:image:alt", "Veysel Kaan İpek", "property");
         setMeta("twitter:card", "summary", "name");
+        setMeta("twitter:image", fallbackImage, "name");
         setCanonical(SITE_URL + "/blog.html");
         return;
       }
@@ -137,15 +140,13 @@
       setMeta("og:title", post.title, "property");
       setMeta("og:description", description, "property");
       setMeta("og:url", absolutePostUrl(post), "property");
-      setMeta("og:image", safeImageUrl(post.coverImage), "property");
-      setMeta("twitter:card", post.coverImage ? "summary_large_image" : "summary", "name");
+      const socialImage = safeImageUrl(post.coverImage) || SITE_URL + "/favicon.png";
+      setMeta("og:image", socialImage, "property");
+      setMeta("og:image:alt", post.title, "property");
+      setMeta("twitter:card", safeImageUrl(post.coverImage) ? "summary_large_image" : "summary", "name");
       setMeta("twitter:title", post.title, "name");
       setMeta("twitter:description", description, "name");
-      if (post.coverImage) {
-        setMeta("twitter:image", safeImageUrl(post.coverImage), "name");
-      } else {
-        document.head.querySelector('meta[name="twitter:image"]')?.remove();
-      }
+      setMeta("twitter:image", socialImage, "name");
       setCanonical(absolutePostUrl(post));
     }
     const updateAdminUI = () => {
@@ -416,7 +417,10 @@
 
     async function loadPosts() {
       if (!supabaseClient) throw new Error("Supabase bağlantısı hazır değil.");
-      const {data,error} = await supabaseClient.from("posts").select("*").order("created_at",{ascending:false});
+      const columns = (isAdmin || isEditor)
+        ? "id,title,category,read_time,excerpt,content,author,created_at,slug,cover_image,meta_description,status,author_id,submitted_at,review_note"
+        : "id,title,category,read_time,excerpt,content,author,created_at,slug,cover_image,meta_description,status";
+      const {data,error} = await supabaseClient.from("posts").select(columns).order("created_at",{ascending:false});
       if (error) throw error;
       databasePosts = data || [];
       posts = sortPosts(isEditor ? databasePosts.filter(post => post.author_id === currentUserId) : databasePosts);
@@ -590,7 +594,8 @@
     });
 
     if (SUPABASE_URL.startsWith("https://") && SUPABASE_ANON_KEY && window.supabase?.createClient) {
-      supabaseClient = window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+      supabaseClient = window.vkiSupabaseClient || window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      window.vkiSupabaseClient = supabaseClient;
       const {data:{session}} = await supabaseClient.auth.getSession();
       currentUserId = session?.user?.id || null;
       isAdmin = adminMode && currentUserId === ADMIN_UID;

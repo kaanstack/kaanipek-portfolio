@@ -21,7 +21,7 @@
   function readCache() {
     try {
       const cached = JSON.parse(sessionStorage.getItem(CACHE_KEY) || "null");
-      return cached && Date.now() - cached.savedAt < CACHE_TTL ? cached.data : null;
+      return cached && cached.data && Number.isFinite(cached.savedAt) ? cached : null;
     } catch (_) {
       return null;
     }
@@ -194,9 +194,15 @@
     const refreshButton = $("github-refresh");
     if (refreshButton) refreshButton.disabled = true;
     const cached = force ? null : readCache();
-    if (cached) {
-      githubData = cached;
-      render(cached);
+    if (cached?.data) {
+      githubData = cached.data;
+      render(githubData);
+      if (Date.now() - cached.savedAt < CACHE_TTL) {
+        if (statusEl) statusEl.textContent = copy("Son başarılı veriler önbellekten gösteriliyor.", "Showing recently cached GitHub data.");
+        isLoading = false;
+        if (refreshButton) refreshButton.disabled = false;
+        return;
+      }
     }
 
     try {

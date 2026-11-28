@@ -329,7 +329,7 @@
                     </div>
                 </form>
 
-                <div id="ticketSuccessBox" class="ticket-success" style="display: none;">
+                <div id="ticketSuccessBox" class="ticket-success" hidden>
                     <div class="success-header">
                         <span class="live-badge" id="generatedTicketBadge">#VKI-2026-000</span>
                         <strong data-tr="Talebiniz Başarıyla Kaydedildi!" data-en="Ticket Successfully Created!">Talebiniz Başarıyla Kaydedildi!</strong>
@@ -413,10 +413,11 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
-    <script src="github-integration.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="development-journal.js"></script>
-    <script src="projects.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script defer src="supabase-client.js"></script>
+    <script defer src="script.js"></script>
+    <script defer src="github-integration.js"></script>
+    <script defer src="development-journal.js"></script>
+    <script defer src="projects.js"></script>
 </body>
 </html>

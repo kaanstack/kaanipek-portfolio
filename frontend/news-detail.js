@@ -39,6 +39,23 @@
     return cleaned || "Uygunsuz başlık";
   }
 
+  const SITE_URL = "https://kaanipek.net.tr";
+  const safeExternalUrl = (value, fallback) => {
+    try { const url = new URL(String(value || "")); return url.protocol === "https:" ? url.href : fallback; }
+    catch { return fallback; }
+  };
+  const setMeta = (name, content, attribute = "name") => {
+    let selector = 'meta[' + attribute + '="' + name + '"]';
+    let element = document.head.querySelector(selector);
+    if (!element) { element = document.createElement("meta"); element.setAttribute(attribute, name); document.head.appendChild(element); }
+    element.setAttribute("content", content || "");
+  };
+  const setCanonical = (url) => {
+    let link = document.head.querySelector('link[rel="canonical"]');
+    if (!link) { link = document.createElement("link"); link.rel = "canonical"; document.head.appendChild(link); }
+    link.href = url;
+  };
+
   const addText = (parent, tag, value, className) => {
     const node = document.createElement(tag);
     if (className) node.className = className;
@@ -110,11 +127,28 @@
 
     const translatedTitle = await translateToTurkish(story.title);
     const title = sanitizeNewsHeadline(translatedTitle !== safeText(story.title) ? translatedTitle : (story.displayTitle || translatedTitle));
-    const url = story.url || `https://news.ycombinator.com/item?id=${id}`;
+    const fallbackUrl = `https://news.ycombinator.com/item?id=${encodeURIComponent(id)}`;
+    const url = safeExternalUrl(story.url, fallbackUrl);
     let domain = "news.ycombinator.com";
     try { domain = new URL(url).hostname.replace(/^www\./, ""); } catch {}
 
     document.title = `${title} | Tech Radar`;
+    const canonicalUrl = SITE_URL + "/news/" + encodeURIComponent(id);
+    const description = safeText(story.text || `${title} — ${domain} kaynağında yayımlandı ve Hacker News topluluğunda tartışılıyor.`).slice(0, 300);
+    const socialTitle = `${title} | Tech Radar`;
+    const socialImage = SITE_URL + "/favicon.png";
+    setMeta("description", description);
+    setMeta("og:type", "article", "property");
+    setMeta("og:site_name", "Veysel Kaan İpek", "property");
+    setMeta("og:title", socialTitle, "property");
+    setMeta("og:description", description, "property");
+    setMeta("og:url", canonicalUrl, "property");
+    setMeta("og:image", socialImage, "property");
+    setMeta("twitter:card", "summary", "name");
+    setMeta("twitter:title", socialTitle, "name");
+    setMeta("twitter:description", description, "name");
+    setMeta("twitter:image", socialImage, "name");
+    setCanonical(canonicalUrl);
     addText(root, "span", categoryOf(story), "news-category");
     addText(root, "h1", title);
 

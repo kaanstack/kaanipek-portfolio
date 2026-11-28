@@ -2,10 +2,11 @@
   "use strict";
   const root = document.getElementById("projects-grid");
   if (!root || !window.supabase?.createClient) return;
-  const client = window.supabase.createClient(
+  const client = window.vkiSupabaseClient || window.supabase.createClient(
     "https://dkhkvpspgniygdqgwtyh.supabase.co",
     "sb_publishable_MPa3mW5WwmD3eVt_PI2X2Q_tqVCYhmd"
   );
+  window.vkiSupabaseClient = client;
   const isEnglish = () => document.documentElement.lang === "en";
   const el = (tag, className, text) => {
     const node = document.createElement(tag);

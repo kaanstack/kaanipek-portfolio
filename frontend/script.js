@@ -477,8 +477,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? `Talebiniz başarıyla kaydedildi. Takip numaranız: #${ticketNumber}. Bu numarayı saklayın.`
                 : `Your request has been saved. Your reference number is #${ticketNumber}. Please keep it safe.`;
 
-            ticketForm.style.display = 'none';
-            successBox.style.display = 'block';
+            ticketForm.hidden = true;
+            successBox.hidden = false;
             successBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         } catch (error) {
             console.error('Ticket submission failed:', error);
@@ -509,8 +509,8 @@ document.addEventListener('DOMContentLoaded', () => {
             ticketError.hidden = true;
             ticketError.textContent = '';
         }
-        successBox.style.display = 'none';
-        ticketForm.style.display = 'flex';
+        successBox.hidden = true;
+        ticketForm.hidden = false;
     });
 
     const lookupForm = document.getElementById('ticketLookupForm');

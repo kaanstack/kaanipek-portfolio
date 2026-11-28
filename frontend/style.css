@@ -2147,3 +2147,6 @@ body.light-theme .github-panel { background: rgba(255, 255, 255, .78); }
 .project-card-links { display:flex; align-items:center; flex-wrap:wrap; justify-content:flex-end; gap:.65rem; }
 .projects-loading,.projects-empty { grid-column:1/-1; color:var(--text-secondary); padding:1rem 0; }
 @media(max-width:720px) { .projects-grid { grid-template-columns:minmax(0,1fr); } }
+
+[hidden] { display: none !important; }
+.blog-site-footer, .news-site-footer, .admin-site-footer { max-width: 1180px; margin: 0 auto; padding-left: 1.5rem; padding-right: 1.5rem; }

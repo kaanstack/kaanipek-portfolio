@@ -5,27 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Blog — Veysel Kaan İpek</title>
   <meta name="description" content="Altyapı, yazılım geliştirme ve mühendislik üzerine teknik notlar." />
-  <meta property="og:type" content="article" />
+  <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Veysel Kaan İpek" />
   <meta property="og:title" content="Blog — Veysel Kaan İpek" />
   <meta property="og:description" content="Altyapı, yazılım geliştirme ve mühendislik üzerine teknik notlar." />
   <meta property="og:url" content="https://kaanipek.net.tr/blog.html" />
-  <meta name="twitter:card" content="summary_large_image" />
+  <meta property="og:image" content="https://kaanipek.net.tr/favicon.png" />
+  <meta property="og:image:alt" content="Veysel Kaan İpek" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:image" content="https://kaanipek.net.tr/favicon.png" />
   <link rel="canonical" href="https://kaanipek.net.tr/blog.html" />
-  <link rel="stylesheet" href="style.css" />
-  <style>
-/* Supabase blog admin */
-#admin-login-panel { margin-top: 1rem; }
-.blog-card-admin-actions { display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.8rem; }
-.blog-card-admin-actions button { border:1px solid var(--border-color); border-radius:8px; padding:.4rem .7rem; background:var(--bg-subtle); color:var(--text-primary); cursor:pointer; }
-.blog-card-admin-actions button:hover { border-color:var(--accent-cyan); }
-.blog-admin-note { color:var(--text-secondary); font-size:.82rem; margin-top:.4rem; }
-</style>
+  <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
   <header class="navbar">
     <div class="nav-container blog-nav-container">
-      <a href="index.html" class="brand" aria-label="Veysel Kaan İpek Ana Sayfa">
+      <a href="/" class="brand" aria-label="Veysel Kaan İpek Ana Sayfa">
         <svg viewBox="0 0 64 64" width="38" height="38" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <defs>
             <linearGradient id="vkiNavGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -134,9 +129,12 @@
     <section id="blog-list" class="blog-list"></section>
   </main>
 
-  <script>window.__vkiSupabaseBlog = true;</script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="script.js"></script>
-  <script src="supabase-blog.js"></script>
+  <footer class="footer blog-site-footer">
+    <div class="footer-content"><div><strong>Veysel Kaan İpek</strong><p>Teknik notlar · Öğren · Üret · Paylaş</p></div><div class="footer-links"><a href="/">Ana sayfa</a><a href="mailto:iletisim@kaanipek.net.tr">İletişim</a></div></div>
+  </footer>
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="/supabase-client.js"></script>
+  <script defer src="/site-ui.js"></script>
+  <script defer src="/supabase-blog.js"></script>
 </body>
 </html>

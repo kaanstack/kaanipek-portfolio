@@ -6,7 +6,8 @@
   document.addEventListener("DOMContentLoaded", async () => {
     const loading = document.getElementById("editorLoading");
     const workspace = document.getElementById("editorWorkspace");
-    const client = window.supabase?.createClient ? window.supabase.createClient(URL, KEY) : null;
+    const client = window.vkiSupabaseClient || (window.supabase?.createClient ? window.supabase.createClient(URL, KEY) : null);
+    if (client) window.vkiSupabaseClient = client;
     if (!client) { loading.querySelector("p").textContent = "Giriş servisine ulaşılamadı. Lütfen daha sonra tekrar dene."; return; }
     try {
       const { data: { session }, error } = await client.auth.getSession();

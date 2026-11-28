@@ -2,10 +2,11 @@
   "use strict";
   const root = document.getElementById("development-timeline");
   if (!root || !window.supabase?.createClient) return;
-  const client = window.supabase.createClient(
+  const client = window.vkiSupabaseClient || window.supabase.createClient(
     "https://dkhkvpspgniygdqgwtyh.supabase.co",
     "sb_publishable_MPa3mW5WwmD3eVt_PI2X2Q_tqVCYhmd"
   );
+  window.vkiSupabaseClient = client;
   const categories = {
     learning: { tr: "Öğrenme", en: "Learning", icon: "↗" },
     project: { tr: "Proje", en: "Project", icon: "⌘" },
