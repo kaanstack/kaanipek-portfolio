@@ -1,23 +1,51 @@
 let currentLang = 'tr';
 
+function hasUnsafeHeadlineLanguage(value) {
+    const text = String(value || "").toLocaleLowerCase("tr-TR");
+    const blockedTerms = [
+        /\bfuck(?:ing|ed|er|ers)?\b/i,
+        /\bshit(?:ty|ting|s)?\b/i,
+        /\basshole\b/i,
+        /\bbitch(?:es)?\b/i,
+        /\bbastard(?:s)?\b/i,
+        /\bdamn(?:ed)?\b/i,
+        /\bhassiktir\b/i,
+        /\bsiktir\b/i,
+        /\bamk\b/i,
+        /\boruspu\b/i,
+        /\bkahpe\b/i
+    ];
+    return blockedTerms.some((pattern) => pattern.test(text));
+}
+
 async function translateToTurkish(text) {
     if (!text) return "";
 
+    // Kaba kaynak başlıklarını çevirmeye çalışma; orijinal başlık daha güvenli olabilir.
+    if (hasUnsafeHeadlineLanguage(text)) return text;
+
     const cacheKey = `vki_hn_tr_${text}`;
-    const cached = localStorage.getItem(cacheKey);
-    if (cached) return cached;
+    try {
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+            // Daha önce kaydedilmiş uygunsuz/bozuk çeviriyi kullanma.
+            if (!hasUnsafeHeadlineLanguage(cached)) return cached;
+            localStorage.removeItem(cacheKey);
+        }
+    } catch { /* storage may be unavailable */ }
 
     try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 3500);
-
-        const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|tr&de=iletisim@kaanipek.net.tr`;
-        const response = await fetch(url, { signal: controller.signal });
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-            return text;
+        let response;
+        try {
+            const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|tr&de=iletisim@kaanipek.net.tr`;
+            response = await fetch(url, { signal: controller.signal });
+        } finally {
+            clearTimeout(timeoutId);
         }
+
+        if (!response.ok) return text;
 
         const data = await response.json();
         const translated = data?.responseData?.translatedText || "";
@@ -28,69 +56,215 @@ async function translateToTurkish(text) {
             /used all available free translations/i.test(translated) ||
             /next available in/i.test(translated);
 
-        if (!translated || isQuotaOrRateLimit) {
+        // Küfür, anlamsız tekrar veya servis uyarısı içeren çeviriyi reddet.
+        const repeatedPhrase = /(.{3,45})(?:\s+\\1){2,}/i.test(translated);
+        if (!translated || isQuotaOrRateLimit || hasUnsafeHeadlineLanguage(translated) || repeatedPhrase) {
             return text;
         }
 
-        localStorage.setItem(cacheKey, translated);
+        try { localStorage.setItem(cacheKey, translated); } catch { /* storage may be unavailable */ }
         return translated;
-    } catch (error) {
+    } catch {
         return text;
     }
 }
 
-async function renderTechFeed(containerSelector, limit = 5) {
+const TECH_RADAR_CACHE_KEY = "vki_tech_radar_cache_v1";
+const TECH_RADAR_CACHE_TTL = 24 * 60 * 60 * 1000;
+const TECH_RADAR_CATEGORIES = ["Tümü", "Yapay Zekâ", "Yazılım", "Siber Güvenlik", "Donanım", "Bulut & DevOps", "Diğer"];
+
+function classifyTechStory(item) {
+    const text = `${item.title || ""} ${item.text || ""} ${item.url || ""}`.toLowerCase();
+    if (/openai|chatgpt|claude|anthropic|gemini|llm|artificial intelligence|\bai\b|machine learning|deep learning|neural| yapay zek/.test(text)) return "Yapay Zekâ";
+    if (/security|cyber|vulnerability|zero.day|malware|ransomware|exploit|cve-|siber güvenlik/.test(text)) return "Siber Güvenlik";
+    if (/gpu|cpu|processor|chip|semiconductor|nvidia|amd|intel|arm |hardware|donanım/.test(text)) return "Donanım";
+    if (/aws|azure|google cloud|kubernetes|docker|devops|cloud|serverless|infrastructure|linux/.test(text)) return "Bulut & DevOps";
+    if (/github|gitlab|programming|developer|javascript|python|rust|linux|database|framework|software|open.source| yazılım/.test(text)) return "Yazılım";
+    return "Diğer";
+}
+
+function getTechRadarCache() {
+    try {
+        const value = JSON.parse(localStorage.getItem(TECH_RADAR_CACHE_KEY) || "null");
+        return value && Array.isArray(value.stories) ? value : null;
+    } catch { return null; }
+}
+
+async function mapWithConcurrency(items, limit, mapper) {
+    const results = new Array(items.length);
+    let nextIndex = 0;
+    const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+        while (nextIndex < items.length) {
+            const index = nextIndex++;
+            results[index] = await mapper(items[index], index);
+        }
+    });
+    await Promise.all(workers);
+    return results;
+}
+
+async function fetchWithTimeout(url, timeoutMs = 7000) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+        return await fetch(url, { signal: controller.signal });
+    } finally {
+        clearTimeout(timeoutId);
+    }
+}
+
+async function fetchTechRadarStories(force = false) {
+    const cached = getTechRadarCache();
+    if (!force && cached && Date.now() - cached.fetchedAt < TECH_RADAR_CACHE_TTL) return cached;
+
+    const response = await fetchWithTimeout("https://hacker-news.firebaseio.com/v0/topstories.json", 8000);
+    if (!response.ok) throw new Error("Haber listesi alınamadı.");
+    const ids = (await response.json()).slice(0, 45);
+    if (!Array.isArray(ids) || !ids.length) throw new Error("Haber listesi boş döndü.");
+
+    // Aynı anda en fazla 6 haber isteği gönder; bir hata tüm akışı durdurmasın.
+    const items = await mapWithConcurrency(ids, 6, async (id) => {
+        try {
+            const result = await fetchWithTimeout(`https://hacker-news.firebaseio.com/v0/item/${id}.json`, 6000);
+            if (!result.ok) return null;
+            const item = await result.json();
+            if (!item || item.deleted || item.dead || !item.title || item.type !== "story") return null;
+            return item;
+        } catch { return null; }
+    });
+
+    const stories = items.filter(Boolean).slice(0, 15).map((item) => ({
+        id: item.id,
+        title: item.title,
+        displayTitle: item.title,
+        url: item.url || `https://news.ycombinator.com/item?id=${item.id}`,
+        domain: (() => { try { return new URL(item.url).hostname.replace(/^www\\./, ""); } catch { return "news.ycombinator.com"; } })(),
+        author: item.by || "Hacker News",
+        score: item.score || 0,
+        comments: item.descendants || 0,
+        time: item.time || Math.floor(Date.now() / 1000),
+        text: item.text || "",
+        kids: Array.isArray(item.kids) ? item.kids : [],
+        category: classifyTechStory(item)
+    }));
+
+    if (!stories.length) throw new Error("Geçerli haber bulunamadı.");
+
+    // Çeviri servisini de sınırlı kullan; başarısızlıkta orijinal başlık gösterilir.
+    await mapWithConcurrency(stories, 3, async (story) => {
+        try { story.displayTitle = await translateToTurkish(story.title); } catch { /* fallback title */ }
+    });
+
+    const value = { fetchedAt: Date.now(), stories };
+    try { localStorage.setItem(TECH_RADAR_CACHE_KEY, JSON.stringify(value)); } catch { /* storage may be unavailable */ }
+    return value;
+}
+
+function sanitizeNewsHeadline(value) {
+    const cleaned = String(value || "")
+        .replace(/\b(?:hass?iktir|siktir|fuck(?:ing)?|shit|asshole|bitch)\b[\s,!.:;—-]*/gi, "")
+        .replace(/^[\s,!.:;—-]+/, "")
+        .replace(/\s{2,}/g, " ")
+        .trim();
+    return cleaned || "Uygunsuz başlık";
+}
+
+function renderTechRadarStories(container, stories, activeCategory = "Tümü", visibleLimit = 5) {
+    const visible = activeCategory === "Tümü" ? stories : stories.filter((story) => story.category === activeCategory);
+    const loadMoreButton = document.getElementById("techRadarLoadMore");
+    container.innerHTML = "";
+    if (!visible.length) {
+        container.innerHTML = '<p class="news-loading">Bu kategoride şu an haber bulunamadı.</p>';
+        if (loadMoreButton) loadMoreButton.hidden = true;
+        return;
+    }
+    visible.slice(0, visibleLimit).forEach((story, index) => {
+        const card = document.createElement("article");
+        card.className = "news-card";
+        card.innerHTML = `
+            <div class="news-card-main">
+                <div class="news-card-topline">
+                    <span class="news-category">${escapeHtml(story.category)}</span>
+                    <span class="news-card-domain">${escapeHtml(story.domain)}</span>
+                </div>
+                <h3 class="news-card-title">${index + 1}. ${escapeHtml(sanitizeNewsHeadline(story.displayTitle || story.title))}</h3>
+                <div class="news-card-meta">
+                    <span>▲ ${story.score} puan</span>
+                    <span>💬 ${story.comments} yorum</span>
+                    <span>${new Date(story.time * 1000).toLocaleDateString("tr-TR")}</span>
+                </div>
+            </div>
+            <a class="news-read-hint" href="news.html?id=${encodeURIComponent(story.id)}">Detayları Oku <span aria-hidden="true">→</span></a>
+        `;
+        container.appendChild(card);
+    });
+    if (loadMoreButton) {
+        const remaining = Math.max(0, visible.length - visibleLimit);
+        loadMoreButton.hidden = remaining === 0;
+        loadMoreButton.textContent = remaining > 0 ? `Daha fazla haber göster · ${remaining} kaldı` : "";
+    }
+}
+
+async function renderTechFeed(containerSelector, forceRefresh = false) {
     const container = document.querySelector(containerSelector);
     if (!container) return;
+    const filters = document.getElementById("techRadarFilters");
+    const updated = document.getElementById("techRadarUpdated");
+    const refreshButton = document.getElementById("techRadarRefresh");
+    let activeCategory = "Tümü";
+    let visibleLimit = 5;
+    const loadMoreButton = document.getElementById("techRadarLoadMore");
+    if (loadMoreButton) {
+        loadMoreButton.onclick = () => {
+            visibleLimit += 5;
+            renderTechRadarStories(container, currentStories, activeCategory, visibleLimit);
+        };
+    }
+    let currentStories = [];
+    if (refreshButton) refreshButton.disabled = true;
 
     try {
-        const topIdsRes = await fetch("https://hacker-news.firebaseio.com/v0/topstories.json");
-        if (!topIdsRes.ok) throw new Error("Hacker News topstories alınamadı");
-
-        const topIds = await topIdsRes.json();
-        const selectedIds = Array.isArray(topIds) ? topIds.slice(0, limit) : [];
-
-        container.innerHTML = "";
-
-        for (let i = 0; i < selectedIds.length; i++) {
-            try {
-                const itemRes = await fetch(`https://hacker-news.firebaseio.com/v0/item/${selectedIds[i]}.json`);
-                if (!itemRes.ok) continue;
-
-                const item = await itemRes.json();
-                if (!item || !item.title) continue;
-
-                const displayTitle = await translateToTurkish(item.title);
-                const articleUrl = item.url || `https://news.ycombinator.com/item?id=${item.id}`;
-                const hostName = (() => {
-                    try {
-                        return new URL(articleUrl).hostname.replace(/^www\./, "");
-                    } catch {
-                        return "news.ycombinator.com";
-                    }
-                })();
-
-                const card = document.createElement("article");
-                card.className = "news-card";
-                card.innerHTML = `
-                    <div>
-                        <h3 class="news-card-title">${i + 1}. ${escapeHtml(displayTitle)}</h3>
-                        <div class="news-card-meta">
-                            <span>${escapeHtml(hostName)}</span>
-                            <span>▲ ${item.score ?? 0} puan</span>
-                            <span>💬 ${item.descendants ?? 0} yorum</span>
-                        </div>
-                    </div>
-                    <a class="news-read-hint" href="${escapeHtml(articleUrl)}" target="_blank" rel="noopener noreferrer">Detayı Oku →</a>
-                `;
-
-                container.appendChild(card);
-            } catch (itemError) {
-                continue;
-            }
+        const cache = await fetchTechRadarStories(forceRefresh);
+        const stories = cache.stories;
+        currentStories = stories;
+        if (filters) {
+            filters.innerHTML = "";
+            TECH_RADAR_CATEGORIES.forEach((category) => {
+                const count = category === "Tümü" ? stories.length : stories.filter((story) => story.category === category).length;
+                if (category !== "Tümü" && count === 0) return;
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = `tech-filter-btn${category === activeCategory ? " active" : ""}`;
+                button.textContent = category;
+                button.addEventListener("click", () => {
+                    activeCategory = category;
+                    visibleLimit = 5;
+                    filters.querySelectorAll("button").forEach((node) => node.classList.toggle("active", node === button));
+                    renderTechRadarStories(container, stories, activeCategory, visibleLimit);
+                });
+                filters.appendChild(button);
+            });
         }
-    } catch (feedError) {
-        container.innerHTML = `<p class="feed-error">Gündem akışı şu an yüklenemedi.</p>`;
+        renderTechRadarStories(container, stories, activeCategory, visibleLimit);
+        if (updated) {
+            const date = new Date(cache.fetchedAt);
+            updated.textContent = `Son güncelleme: ${date.toLocaleString("tr-TR", { dateStyle: "medium", timeStyle: "short" })}`;
+        }
+    } catch (error) {
+        console.error("Tech Radar yüklenemedi:", error);
+        const cached = getTechRadarCache();
+        if (cached?.stories?.length) {
+            currentStories = cached.stories;
+            renderTechRadarStories(container, cached.stories, "Tümü", visibleLimit);
+            if (updated) {
+                const date = cached.fetchedAt ? new Date(cached.fetchedAt).toLocaleString("tr-TR", { dateStyle: "medium", timeStyle: "short" }) : "";
+                updated.textContent = date ? `Güncel bağlantı kurulamadı · Son kayıt: ${date}` : "Güncel bağlantı kurulamadı · Kayıtlı haberler gösteriliyor.";
+            }
+        } else {
+            container.innerHTML = '<p class="news-loading">Haberler şu anda yüklenemedi. Lütfen biraz sonra tekrar deneyin.</p>';
+        }
+    } finally {
+        if (refreshButton) refreshButton.disabled = false;
     }
 }
 
@@ -160,6 +334,22 @@ function setLanguage(lang) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Mobil gezinme menüsü
+    const menuToggle = document.getElementById('menuToggleBtn');
+    const primaryNav = document.getElementById('primaryNav');
+    menuToggle?.addEventListener('click', () => {
+        const isOpen = primaryNav?.classList.toggle('is-open') ?? false;
+        menuToggle.setAttribute('aria-expanded', String(isOpen));
+        menuToggle.setAttribute('aria-label', isOpen ? 'Menüyü Kapat' : 'Menüyü Aç');
+    });
+    primaryNav?.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+            primaryNav.classList.remove('is-open');
+            menuToggle?.setAttribute('aria-expanded', 'false');
+            menuToggle?.setAttribute('aria-label', 'Menüyü Aç');
+        });
+    });
+
     // Dil Seçimi
     document.querySelectorAll('.lang-btn').forEach(btn => {
         btn.addEventListener('click', () => setLanguage(btn.dataset.lang));
@@ -211,46 +401,184 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // DevOps Ticket Form Gönderimi (Netlify Forms AJAX)
+    // Ticket submission and public status lookup (Supabase RPC)
+    const SUPABASE_URL = "https://dkhkvpspgniygdqgwtyh.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_MPa3mW5WwmD3eVt_PI2X2Q_tqVCYhmd";
     const ticketForm = document.getElementById('ticketForm');
     const successBox = document.getElementById('ticketSuccessBox');
     const ticketBadge = document.getElementById('generatedTicketBadge');
     const ticketText = document.getElementById('ticketSuccessText');
     const hiddenIdInput = document.getElementById('hiddenTicketId');
+    const ticketError = document.getElementById('ticketError');
+    const ticketSubmitButton = ticketForm?.querySelector('button[type="submit"]');
+    const supabaseHeaders = {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json'
+    };
 
     ticketForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const randomCode = Math.floor(100 + Math.random() * 900);
-        const ticketNumber = `#VKI-2026-${randomCode}`;
-        if (hiddenIdInput) hiddenIdInput.value = ticketNumber;
+        if (!ticketForm.reportValidity() || ticketSubmitButton?.disabled) return;
 
-        const formData = new FormData(ticketForm);
-        try {
-            await fetch('/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: new URLSearchParams(formData).toString()
-            });
-        } catch {
-            // Yerel testte ağ hatası olursa yine onay ekranını göster
+        if (ticketError) {
+            ticketError.hidden = true;
+            ticketError.textContent = '';
+        }
+        const originalButtonText = ticketSubmitButton?.textContent || '';
+        if (ticketSubmitButton) {
+            ticketSubmitButton.disabled = true;
+            ticketSubmitButton.textContent = currentLang === 'tr' ? 'Gönderiliyor…' : 'Sending…';
+            ticketSubmitButton.setAttribute('aria-busy', 'true');
         }
 
-        ticketBadge.textContent = ticketNumber;
-        ticketText.textContent = currentLang === 'tr'
-            ? `Talebiniz ${ticketNumber} takip numarasıyla oluşturuldu ve iletisim@kaanipek.net.tr adresine yönlendirildi. En kısa sürede dönüş yapılacaktır.`
-            : `Your request has been logged under ${ticketNumber} and routed to iletisim@kaanipek.net.tr. You will receive a response shortly.`;
+        const formData = new FormData(ticketForm);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-        ticketForm.style.display = 'none';
-        successBox.style.display = 'block';
+        try {
+            const createResponse = await fetch(`${SUPABASE_URL}/rest/v1/rpc/create_ticket`, {
+                method: 'POST',
+                headers: supabaseHeaders,
+                body: JSON.stringify({
+                    p_name: formData.get('name'),
+                    p_email: formData.get('email'),
+                    p_category: formData.get('category'),
+                    p_priority: formData.get('priority'),
+                    p_message: formData.get('message')
+                }),
+                signal: controller.signal
+            });
+            if (!createResponse.ok) {
+                const details = await createResponse.text();
+                throw new Error(`Ticket API HTTP ${createResponse.status}: ${details}`);
+            }
+
+            const created = await createResponse.json();
+            const ticketNumber = created?.ticket_number;
+            if (!ticketNumber) throw new Error('Ticket API returned no reference number.');
+
+            if (hiddenIdInput) hiddenIdInput.value = `#${ticketNumber}`;
+            formData.set('ticket-id', `#${ticketNumber}`);
+
+            // Keep Netlify Forms as a secondary inbox; Supabase is the source of truth.
+            try {
+                await fetch('/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams(formData).toString()
+                });
+            } catch (backupError) {
+                console.warn('Netlify backup submission failed; ticket is safely stored in Supabase.', backupError);
+            }
+
+            ticketBadge.textContent = `#${ticketNumber}`;
+            ticketText.textContent = currentLang === 'tr'
+                ? `Talebiniz başarıyla kaydedildi. Takip numaranız: #${ticketNumber}. Bu numarayı saklayın.`
+                : `Your request has been saved. Your reference number is #${ticketNumber}. Please keep it safe.`;
+
+            ticketForm.hidden = true;
+            successBox.hidden = false;
+            successBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } catch (error) {
+            console.error('Ticket submission failed:', error);
+            if (hiddenIdInput) hiddenIdInput.value = '';
+            if (ticketError) {
+                ticketError.textContent = currentLang === 'tr'
+                    ? (error.name === 'AbortError'
+                        ? 'Gönderim zaman aşımına uğradı. Lütfen tekrar deneyin.'
+                        : 'Talep kaydedilemedi. Lütfen biraz sonra tekrar deneyin.')
+                    : (error.name === 'AbortError'
+                        ? 'The request timed out. Please try again.'
+                        : 'The request could not be saved. Please try again shortly.');
+                ticketError.hidden = false;
+            }
+        } finally {
+            clearTimeout(timeoutId);
+            if (ticketSubmitButton) {
+                ticketSubmitButton.disabled = false;
+                ticketSubmitButton.textContent = originalButtonText;
+                ticketSubmitButton.removeAttribute('aria-busy');
+            }
+        }
     });
 
     document.getElementById('newTicketBtn')?.addEventListener('click', () => {
         ticketForm.reset();
-        successBox.style.display = 'none';
-        ticketForm.style.display = 'flex';
+        if (ticketError) {
+            ticketError.hidden = true;
+            ticketError.textContent = '';
+        }
+        successBox.hidden = true;
+        ticketForm.hidden = false;
+    });
+
+    const lookupForm = document.getElementById('ticketLookupForm');
+    const lookupInput = document.getElementById('ticketLookupNumber');
+    const lookupError = document.getElementById('ticketLookupError');
+    const lookupResult = document.getElementById('ticketLookupResult');
+    const ticketStatusLabels = {
+        received: currentLang === 'tr' ? 'Talep alındı' : 'Request received',
+        in_progress: currentLang === 'tr' ? 'İnceleniyor' : 'In progress',
+        resolved: currentLang === 'tr' ? 'Çözüldü' : 'Resolved',
+        closed: currentLang === 'tr' ? 'Kapatıldı' : 'Closed'
+    };
+
+    lookupForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!lookupForm.reportValidity()) return;
+        lookupError.hidden = true;
+        lookupResult.hidden = true;
+        lookupResult.textContent = '';
+        const button = lookupForm.querySelector('button[type="submit"]');
+        const oldText = button.textContent;
+        button.disabled = true;
+        button.textContent = currentLang === 'tr' ? 'Sorgulanıyor…' : 'Checking…';
+
+        try {
+            const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_ticket_status`, {
+                method: 'POST',
+                headers: supabaseHeaders,
+                body: JSON.stringify({ p_ticket_number: lookupInput.value.trim() })
+            });
+            if (!response.ok) throw new Error(`Ticket lookup HTTP ${response.status}`);
+            const rows = await response.json();
+            const ticket = Array.isArray(rows) ? rows[0] : null;
+            if (!ticket) {
+                lookupError.textContent = currentLang === 'tr'
+                    ? 'Bu takip numarasıyla eşleşen bir talep bulunamadı. Numarayı kontrol edin.'
+                    : 'No request was found for this reference number. Please check it.';
+                lookupError.hidden = false;
+                return;
+            }
+
+            const statusText = ticketStatusLabels[ticket.status] || ticketStatusLabels.received;
+            const dateText = new Date(ticket.created_at).toLocaleDateString(currentLang === 'tr' ? 'tr-TR' : 'en-GB');
+            const title = document.createElement('strong');
+            title.textContent = currentLang === 'tr' ? 'Talep durumu' : 'Request status';
+            const status = document.createElement('span');
+            status.className = 'ticket-status-pill';
+            status.textContent = statusText;
+            const reference = document.createElement('p');
+            reference.textContent = `#${ticket.ticket_number}`;
+            const created = document.createElement('small');
+            created.textContent = (currentLang === 'tr' ? 'Oluşturulma tarihi: ' : 'Created: ') + dateText;
+            lookupResult.append(title, status, reference, created);
+            lookupResult.hidden = false;
+        } catch (error) {
+            console.error('Ticket lookup failed:', error);
+            lookupError.textContent = currentLang === 'tr'
+                ? 'Sorgulama şu anda yapılamıyor. Lütfen tekrar deneyin.'
+                : 'Status lookup is temporarily unavailable. Please try again.';
+            lookupError.hidden = false;
+        } finally {
+            button.disabled = false;
+            button.textContent = oldText;
+        }
     });
 
     renderTechFeed("#hn-news-list");
+    document.getElementById("techRadarRefresh")?.addEventListener("click", () => renderTechFeed("#hn-news-list", true));
 });
 
 async function initBlogPage() {
@@ -509,4 +837,4 @@ async function initBlogPage() {
   updateCustomCategory();
 }
 
-document.addEventListener("DOMContentLoaded", initBlogPage);
+if (!window.__vkiSupabaseBlog) document.addEventListener("DOMContentLoaded", initBlogPage);

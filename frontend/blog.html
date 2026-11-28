@@ -4,12 +4,23 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Blog — Veysel Kaan İpek</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta name="description" content="Altyapı, yazılım geliştirme ve mühendislik üzerine teknik notlar." />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Veysel Kaan İpek" />
+  <meta property="og:title" content="Blog — Veysel Kaan İpek" />
+  <meta property="og:description" content="Altyapı, yazılım geliştirme ve mühendislik üzerine teknik notlar." />
+  <meta property="og:url" content="https://kaanipek.net.tr/blog.html" />
+  <meta property="og:image" content="https://kaanipek.net.tr/favicon.png" />
+  <meta property="og:image:alt" content="Veysel Kaan İpek" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:image" content="https://kaanipek.net.tr/favicon.png" />
+  <link rel="canonical" href="https://kaanipek.net.tr/blog.html" />
+  <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
   <header class="navbar">
     <div class="nav-container blog-nav-container">
-      <a href="index.html" class="brand" aria-label="Veysel Kaan İpek Ana Sayfa">
+      <a href="/" class="brand" aria-label="Veysel Kaan İpek Ana Sayfa">
         <svg viewBox="0 0 64 64" width="38" height="38" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <defs>
             <linearGradient id="vkiNavGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -37,15 +48,31 @@
 
   <main class="container blog-main">
     <section class="blog-header">
-      <h1>Teknik Notlar &amp; Blog</h1>
-      <p>Altyapı, yazılım geliştirme ve sahadaki mühendislik notları</p>
-      <div id="blog-filters" class="blog-filters"></div>
+      <div class="blog-eyebrow"><span class="blog-eyebrow-dot"></span> KİŞİSEL TEKNİK YAYIN</div>
+      <h1>Fikirlerden <span>uygulamaya.</span></h1>
+      <p>Yazılım, kurumsal sistemler ve teknoloji üzerine öğrendiklerimi, denediklerimi ve not aldıklarımı paylaşıyorum.</p>
+      <div class="blog-header-foot">
+        <span class="blog-header-index">VKI / NOTES — 001</span>
+        <span class="blog-header-caption">ÖĞREN · ÜRET · PAYLAŞ</span>
+      </div>
+      <div id="blog-filters" class="blog-filters" aria-label="Yazı kategorileri"></div>
     </section>
 
-    <section class="blog-tools" aria-label="Blog yazısı işlemleri">
+    <section id="blog-discovery" class="blog-discovery" aria-label="Blog yazılarını keşfet">
+      <div class="blog-results-label"><span>YAYIN ARŞİVİ</span><span id="blog-post-count">Yazılar yükleniyor…</span></div>
+      <label class="blog-search-wrap" for="blog-search">
+        <span aria-hidden="true">⌕</span>
+        <input id="blog-search" type="search" placeholder="Yazılarda ara..." autocomplete="off">
+        <kbd>ARA</kbd>
+      </label>
+    </section>
+    <section id="blog-featured" class="blog-featured" aria-label="Öne çıkan yazı"></section>
+
+    <section class="blog-tools" aria-label="Blog yönetimi">
       <div class="blog-toolbar">
-        <button type="button" id="newPostToggle" class="btn btn-primary" aria-expanded="false" aria-controls="blog-form-panel">✍ Yeni Yazı Ekle</button>
-        <button type="button" id="copyPostsJson" class="btn btn-secondary">JSON Çıktısını Kopyala</button>
+        <button type="button" id="newPostToggle" class="btn btn-primary hidden" aria-expanded="false" aria-controls="blog-form-panel">✍ Yeni Yazı Ekle</button>
+        <button type="button" id="copyPostsJson" class="btn btn-secondary hidden">JSON Çıktısını Kopyala</button>
+        <button type="button" id="adminLogout" class="btn btn-secondary hidden">Çıkış Yap</button>
       </div>
       <p id="blog-status" class="blog-status" role="status" aria-live="polite"></p>
     </section>
@@ -73,6 +100,16 @@
             <input id="postReadTime" name="readTime" type="text" required maxlength="40" placeholder="Örn: 5 dk">
           </div>
           <div class="form-group blog-form-wide">
+            <label for="coverImageFile">Kapak Görseli (JPG, PNG, WebP veya AVIF · en fazla 5 MB)</label>
+            <input id="coverImageFile" type="file" accept="image/jpeg,image/png,image/webp,image/avif">
+            <img id="coverImagePreview" class="cover-image-preview hidden" alt="Kapak görseli önizlemesi">
+            <p class="blog-admin-note">Görsel seçmezsen mevcut kapak korunur. Yeni yazıda kapak görseli isteğe bağlıdır.</p>
+          </div>
+          <div class="form-group blog-form-wide">
+            <label for="metaDescription">SEO Açıklaması (önerilen: 150–160 karakter)</label>
+            <textarea id="metaDescription" name="metaDescription" rows="2" maxlength="320" placeholder="Arama motorlarında görünebilecek kısa açıklama"></textarea>
+          </div>
+          <div class="form-group blog-form-wide">
             <label for="postSummary">Özet</label>
             <textarea id="postSummary" name="summary" rows="3" required maxlength="500"></textarea>
           </div>
@@ -92,6 +129,12 @@
     <section id="blog-list" class="blog-list"></section>
   </main>
 
-  <script src="script.js"></script>
+  <footer class="footer blog-site-footer">
+    <div class="footer-content"><div><strong>Veysel Kaan İpek</strong><p>Teknik notlar · Öğren · Üret · Paylaş</p></div><div class="footer-links"><a href="/">Ana sayfa</a><a href="mailto:iletisim@kaanipek.net.tr">İletişim</a></div></div>
+  </footer>
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="/supabase-client.js"></script>
+  <script defer src="/site-ui.js"></script>
+  <script defer src="/supabase-blog.js"></script>
 </body>
 </html>

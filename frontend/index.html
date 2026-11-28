@@ -4,9 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Veysel Kaan İpek | Bilgisayar Mühendisliği & Yazılım</title>
-    <meta name="description" content="Veysel Kaan İpek - Bilgisayar Mühendisliği Öğrencisi, SAP ABAP Geliştirici ve DevOps / Bulut Sistemleri Meraklısı.">
+    <meta name="description" content="Veysel Kaan İpek — KTO Karatay Üniversitesi Bilgisayar Mühendisliği öğrencisi. Kurumsal yazılım, ERP, ASP ve sistem teknolojileri üzerine çalışmalar.">
     <link rel="icon" type="image/png" sizes="192x192" href="/favicon.png">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="apple-touch-icon" href="/favicon.png">
+    <link rel="canonical" href="https://kaanipek.net.tr/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Veysel Kaan İpek">
+    <meta property="og:title" content="Veysel Kaan İpek | Bilgisayar Mühendisliği & Yazılım">
+    <meta property="og:description" content="Bilgisayar Mühendisliği öğrencisi. Kurumsal yazılım, ERP, ASP ve sistem teknolojileri üzerine çalışmalar.">
+    <meta property="og:url" content="https://kaanipek.net.tr/">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Veysel Kaan İpek | Bilgisayar Mühendisliği & Yazılım">
+    <meta name="twitter:description" content="Kurumsal yazılım, ERP, ASP ve sistem teknolojileri üzerine çalışmalar.">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "Veysel Kaan İpek",
+      "url": "https://kaanipek.net.tr/",
+      "email": "mailto:iletisim@kaanipek.net.tr",
+      "jobTitle": "Computer Engineering Student",
+      "knowsAbout": ["Enterprise Software", "ERP", "ASP", "Linux", "C Programming", "Web Technologies"]
+    }
+    </script>
+    <meta name="theme-color" content="#070a11">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -31,14 +53,19 @@
                 <span class="brand-name">kaanipek<span class="accent">.net.tr</span></span>
             </a>
 
-            <nav class="nav-links">
+            <nav class="nav-links" id="primaryNav" aria-label="Ana gezinme">
                 <a href="#about" data-tr="Hakkımda" data-en="About">Hakkımda</a>
                 <a href="#experience" data-tr="Deneyim" data-en="Experience">Deneyim</a>
+                <a href="#development-log" data-tr="Gelişim Günlüğü" data-en="Journey">Gelişim Günlüğü</a>
                 <a href="#projects" data-tr="Projeler" data-en="Projects">Projeler</a>
+                <a href="#github-activity" data-tr="GitHub" data-en="GitHub">GitHub</a>
                 <a href="#news" data-tr="Teknoloji Gündemi" data-en="Tech News">Teknoloji Gündemi</a>
                 <a href="#ticket" data-tr="Ticket & İletişim" data-en="Ticket & Contact">Ticket & İletişim</a>
             </nav>
 
+            <button type="button" id="menuToggleBtn" class="menu-toggle" aria-label="Menüyü Aç" aria-expanded="false" aria-controls="primaryNav">
+                <span></span><span></span><span></span>
+            </button>
             <div class="nav-controls">
                 <div class="lang-switch" role="group" aria-label="Dil Seçimi">
                     <button type="button" class="lang-btn active" data-lang="tr">TR</button>
@@ -62,9 +89,9 @@
             <h1 class="hero-title">Veysel Kaan İpek</h1>
 
             <p class="hero-subtitle"
-               data-tr="Kurumsal ERP sistemleri (SAP ABAP), DevOps & bulut altyapıları ve sistem programlama üzerine odaklanan Bilgisayar Mühendisliği 1. sınıf öğrencisiyim. Ölçeklenebilir arka plan mimarileri ve otomasyon araçları geliştiriyorum."
-               data-en="I am a 1st-year Computer Engineering student focusing on enterprise ERP systems (SAP ABAP), DevOps & cloud infrastructures, and systems programming. I build scalable backend architectures and automation workflows.">
-                Kurumsal ERP sistemleri (SAP ABAP), DevOps & bulut altyapıları ve sistem programlama üzerine odaklanan Bilgisayar Mühendisliği 1. sınıf öğrencisiyim. Ölçeklenebilir arka plan mimarileri ve otomasyon araçları geliştiriyorum.
+               data-tr="Kurumsal yazılım, ERP süreçleri ve sistem teknolojilerine ilgi duyan KTO Karatay Üniversitesi Bilgisayar Mühendisliği öğrencisiyim. Öğrenirken gerçek ihtiyaçlara dokunan yazılımlar geliştirmeye, altyapıyı anlamaya ve teknik becerilerimi projelerle güçlendirmeye odaklanıyorum."
+               data-en="I am a Computer Engineering student at KTO Karatay University interested in enterprise software, ERP processes, and systems technologies. I focus on building practical software, understanding infrastructure, and strengthening my skills through hands-on projects.">
+                Kurumsal yazılım, ERP süreçleri ve sistem teknolojilerine ilgi duyan KTO Karatay Üniversitesi Bilgisayar Mühendisliği öğrencisiyim. Öğrenirken gerçek ihtiyaçlara dokunan yazılımlar geliştirmeye, altyapıyı anlamaya ve teknik becerilerimi projelerle güçlendirmeye odaklanıyorum.
             </p>
 
             <div class="hero-actions">
@@ -73,7 +100,14 @@
                 <a href="mailto:iletisim@kaanipek.net.tr?subject=İletişim%20-%20kaanipek.net.tr" class="btn btn-ghost" id="copyEmailBtn">
                     ✉ iletisim@kaanipek.net.tr
                 </a>
-                <a href="blog.html" class="btn btn-ghost" id="blogPageLink">Blog ↗</a>
+                <a href="blog.html" class="btn blog-cta" id="blogPageLink">
+                    <svg class="blog-cta-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M5 4.75A2.75 2.75 0 0 1 7.75 2H20v17H7.75A2.75 2.75 0 0 0 5 21.75v-17Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M5 5v16.75M9 7h7M9 10.5h7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+                    </svg>
+                    <span data-tr="Teknik Blog" data-en="Tech Blog">Teknik Blog</span>
+                    <span class="blog-cta-arrow" aria-hidden="true">↗</span>
+                </a>
                 <a href="/github" class="btn btn-ghost" target="_blank" rel="noopener">GitHub ↗</a>
                 <a href="/linkedin" class="btn btn-ghost" target="_blank" rel="noopener">LinkedIn ↗</a>
                 <span id="copyToast" class="copy-toast" data-tr="E-posta kopyalandı!" data-en="Email copied!">E-posta kopyalandı!</span>
@@ -83,8 +117,8 @@
         <!-- DENEYİM & TEKNİK YETKİNLİKLER -->
         <section id="experience" class="content-section">
             <div class="section-header">
-                <h2 data-tr="Deneyim & Teknik Yetkinlikler" data-en="Experience & Technical Stack">Deneyim & Teknik Yetkinlikler</h2>
-                <p data-tr="Kurumsal yazılım geliştirme süreçleri ve altyapı mühendisliği odak alanlarım"
+                <h2 data-tr="Deneyim & Teknik Odak" data-en="Experience & Technical Focus">Deneyim & Teknik Odak</h2>
+                <p data-tr="Öğrenmeye devam ettiğim alanlar ve pratikte temas ettiğim teknolojiler"
                    data-en="Enterprise software development processes and infrastructure engineering focus areas">
                     Kurumsal yazılım geliştirme süreçleri ve altyapı mühendisliği odak alanlarım
                 </p>
@@ -93,14 +127,14 @@
             <div class="grid-two">
                 <article class="card">
                     <div class="card-top">
-                        <span class="tag-pill" data-tr="Aktif Rol" data-en="Current Role">Aktif Rol</span>
+                        <span class="tag-pill" data-tr="Gönüllü Öğrenme" data-en="Voluntary Learning">Gönüllü Öğrenme</span>
                         <span class="muted-date">Bilgi İşlem</span>
                     </div>
-                    <h3>Meram Unları — SAP ABAP Geliştirme</h3>
+                    <h3>Meram Unları — Yazılım Geliştirme Çalışmaları</h3>
                     <p class="card-desc"
-                       data-tr="Bilgi İşlem departmanı bünyesinde SAP ABAP geliştirme süreçlerinde görev alıyorum. Özel veritabanı tabloları (Z-tablolar), veri elemanları (Data Elements), domain yapıları ve seçim ekranlı (Selection-Screen) kurumsal raporlama modülleri tasarlıyorum."
-                       data-en="Working on SAP ABAP development within the IT department. Designing custom database tables (Z-tables), data elements, domain architectures, and selection-screen enterprise reporting modules.">
-                        Bilgi İşlem departmanı bünyesinde SAP ABAP geliştirme süreçlerinde görev alıyorum. Özel veritabanı tabloları (Z-tablolar), veri elemanları (Data Elements), domain yapıları ve seçim ekranlı (Selection-Screen) kurumsal raporlama modülleri tasarlıyorum.
+                       data-tr="Bilgi İşlem ekibinin yanında şirket içi özel yazılımın işleyişini ve geliştirme süreçlerini öğreniyorum. ASP tabanlı uygulamalar üzerinde kendimi geliştiriyor, uygun görevlerde kodlama ve yazılım iyileştirme çalışmalarına katkı sağlıyorum."
+                       data-en="Learning how internal business software works alongside the IT team. Developing my skills with ASP-based applications and contributing to coding and software improvement tasks where appropriate.">
+                        Bilgi İşlem ekibinin yanında şirket içi özel yazılımın işleyişini ve geliştirme süreçlerini öğreniyorum. ASP tabanlı uygulamalar üzerinde kendimi geliştiriyor, uygun görevlerde kodlama ve yazılım iyileştirme çalışmalarına katkı sağlıyorum.
                     </p>
                 </article>
 
@@ -109,98 +143,123 @@
                         <span class="tag-pill" data-tr="Teknik Yığın" data-en="Tech Stack">Teknik Yığın</span>
                         <span class="muted-date">2026</span>
                     </div>
-                    <h3 data-tr="Altyapı, Bulut & Sistem Geliştirme" data-en="Infrastructure, Cloud & Systems">Altyapı, Bulut & Sistem Geliştirme</h3>
+                    <h3 data-tr="Teknolojiler & İlgi Alanları" data-en="Technologies & Areas of Interest">Teknolojiler & İlgi Alanları</h3>
                     <div class="skills-grid">
-                        <span class="skill-tag">SAP ABAP & Data Dictionary</span>
+                        <span class="skill-tag">ASP & Kurumsal Yazılım</span>
                         <span class="skill-tag">Linux & Bash</span>
                         <span class="skill-tag">Cloudflare DNS / SSL / TLS</span>
-                        <span class="skill-tag">DevOps & CI/CD</span>
+                        <span class="skill-tag">DevOps & CI/CD (İlgi Alanı)</span>
                         <span class="skill-tag" data-tr="C Programlama" data-en="C Programming">C Programlama</span>
                         <span class="skill-tag">Git & GitHub</span>
+                        <span class="skill-tag">Supabase</span>
                         <span class="skill-tag">HTML / CSS / JS</span>
-                        <span class="skill-tag" data-tr="Gömülü Sistemler & Simülasyon (Ar-Ge)" data-en="Embedded & Simulation (R&D)">Gömülü Sistemler & Simülasyon (Ar-Ge)</span>
+                        <span class="skill-tag" data-tr="Gömülü Sistemler (İlgi Alanı)" data-en="Embedded Systems (Interest)">Gömülü Sistemler (İlgi Alanı)</span>
                     </div>
                 </article>
+            </div>
+        </section>
+
+
+        <!-- DEVELOPMENT JOURNEY -->
+        <section id="development-log" class="content-section development-section">
+            <div class="section-header development-header">
+                <div>
+                    <span class="development-eyebrow">LEARNING / BUILDING / GROWING</span>
+                    <h2 data-tr="Gelişim Günlüğü" data-en="Development Journal">Gelişim Günlüğü</h2>
+                    <p data-tr="Öğrendiklerim, üzerinde çalıştıklarım ve yol boyunca attığım teknik adımlar."
+                       data-en="What I learn, what I build, and the technical milestones along the way.">
+                       Öğrendiklerim, üzerinde çalıştıklarım ve yol boyunca attığım teknik adımlar.
+                    </p>
+                </div>
+            </div>
+            <div id="development-timeline" class="development-timeline" aria-live="polite">
+                <p class="development-loading" data-tr="Gelişim günlüğü yükleniyor…" data-en="Loading development journal…">Gelişim günlüğü yükleniyor…</p>
             </div>
         </section>
 
         <!-- PROJELER -->
         <section id="projects" class="content-section">
             <div class="section-header">
-                <h2 data-tr="Öne Çıkan Projeler" data-en="Featured Projects">Öne Çıkan Projeler</h2>
-                <p data-tr="Altyapı, kurumsal yazılım ve sistem programlama alanında geliştirdiğim çalışmalar"
+                <h2 data-tr="Öne Çıkan Çalışmalar" data-en="Selected Work">Öne Çıkan Çalışmalar</h2>
+                <p data-tr="Portföyümde geliştirdiğim ve üzerinde çalıştığım uygulamalar"
                    data-en="Works developed in infrastructure, enterprise software, and systems programming">
                     Altyapı, kurumsal yazılım ve sistem programlama alanında geliştirdiğim çalışmalar
                 </p>
             </div>
-
-            <div class="grid-three">
-                <article class="card project-card">
-                    <div class="card-top">
-                        <span class="tag-pill">Cloud & DNS</span>
-                        <a href="https://kaanipek.net.tr" class="card-link">Canlı ↗</a>
-                    </div>
-                    <h3>kaanipek.net.tr Bulut & Ağ Mimarisi</h3>
-                    <p class="card-desc"
-                       data-tr="Metunic alan adı yönetimi, Cloudflare Nameserver devri, uçtan uca TLS şifrelemesi, özel kurumsal e-posta yönlendirme (MX/SPF) ve sıfır sunucu maliyetli statik CDN dağıtım altyapısı."
-                       data-en="Metunic domain management, Cloudflare Nameserver delegation, end-to-end TLS encryption, custom email routing (MX/SPF), and zero-server-cost static CDN deployment architecture.">
-                        Metunic alan adı yönetimi, Cloudflare Nameserver devri, uçtan uca TLS şifrelemesi, özel kurumsal e-posta yönlendirme (MX/SPF) ve sıfır sunucu maliyetli statik CDN dağıtım altyapısı.
-                    </p>
-                    <div class="tech-mini">
-                        <span>Cloudflare</span> • <span>DNS/TLS</span> • <span>Static CDN</span>
-                    </div>
-                </article>
-
-                <article class="card project-card">
-                    <div class="card-top">
-                        <span class="tag-pill">SAP ERP</span>
-                        <span class="muted-date">ABAP</span>
-                    </div>
-                    <h3 data-tr="Kurumsal Veri & Raporlama Modülleri" data-en="Enterprise Data & Reporting Modules">Kurumsal Veri & Raporlama Modülleri</h3>
-                    <p class="card-desc"
-                       data-tr="SAP ortamında ilişkisel Z-tablo mimarileri, doğrulama kurallı veri elemanları ve parametrik seçim ekranlarıyla çalışan hızlı kurumsal veri analiz ve raporlama programları."
-                       data-en="Relational Z-table architectures in SAP, validated data elements, and fast enterprise data analysis and reporting programs powered by parametric selection screens.">
-                        SAP ortamında ilişkisel Z-tablo mimarileri, doğrulama kurallı veri elemanları ve parametrik seçim ekranlarıyla çalışan hızlı kurumsal veri analiz ve raporlama programları.
-                    </p>
-                    <div class="tech-mini">
-                        <span>SAP ABAP</span> • <span>SE11 / SE38</span> • <span>Open SQL</span>
-                    </div>
-                </article>
-
-                <article class="card project-card">
-                    <div class="card-top">
-                        <span class="tag-pill">Systems & C</span>
-                        <a href="/github" target="_blank" rel="noopener" class="card-link">GitHub ↗</a>
-                    </div>
-                    <h3 data-tr="Algoritma & Sistem Programlama Kütüphanesi" data-en="Algorithms & Systems Programming Suite">Algoritma & Sistem Programlama Kütüphanesi</h3>
-                    <p class="card-desc"
-                       data-tr="Bellek yönetimi, işaretçi (pointer) yapıları, veri yapıları ve düşük seviyeli optimizasyon teknikleri üzerine C diliyle geliştirilen modüler uygulama ve test koleksiyonu."
-                       data-en="Modular application and test collection developed in C focusing on memory management, pointer structures, data structures, and low-level optimization techniques.">
-                        Bellek yönetimi, işaretçi (pointer) yapıları, veri yapıları ve düşük seviyeli optimizasyon teknikleri üzerine C diliyle geliştirilen modüler uygulama ve test koleksiyonu.
-                    </p>
-                    <div class="tech-mini">
-                        <span>C</span> • <span>Linux</span> • <span>Memory Management</span>
-                    </div>
-                </article>
+            <div id="projects-grid" class="grid-three projects-grid" aria-live="polite">
+                <p class="projects-loading" data-tr="Projeler yükleniyor…" data-en="Loading projects…">Projeler yükleniyor…</p>
             </div>
         </section>
 
-        <!-- CANLI TEKNOLOJİ GÜNDEMİ -->
+        <!-- GITHUB ACTIVITY -->
+        <section id="github-activity" class="content-section github-section">
+            <div class="section-header github-section-header">
+                <div>
+                    <span class="github-eyebrow">OPEN SOURCE / GITHUB</span>
+                    <h2 data-tr="GitHub Aktivitem" data-en="GitHub Activity">GitHub Aktivitem</h2>
+                    <p data-tr="Açık kaynak çalışmalarım ve güncel depo hareketlerim."
+                       data-en="My open-source work and recent repository activity.">
+                        Açık kaynak çalışmalarım ve güncel depo hareketlerim.
+                    </p>
+                </div>
+                <div class="github-header-actions">
+                    <button type="button" id="github-refresh" class="github-refresh-btn" data-tr="↻ Yenile" data-en="↻ Refresh">↻ Yenile</button>
+                    <a class="card-link github-profile-link" href="https://github.com/kaanstack" target="_blank" rel="noopener noreferrer"
+                   data-tr="GitHub profilim ↗" data-en="My GitHub profile ↗">GitHub profilim ↗</a>
+                </div>
+            </div>
+            <div id="github-stats" class="github-stats" aria-label="GitHub istatistikleri">
+                <div class="github-stat"><span class="github-stat-value">—</span><span class="github-stat-label" data-tr="Herkese açık depo" data-en="Public repositories">Herkese açık depo</span></div>
+                <div class="github-stat"><span class="github-stat-value">—</span><span class="github-stat-label" data-tr="Kullanılan dil" data-en="Languages used">Kullanılan dil</span></div>
+                <div class="github-stat"><span class="github-stat-value">—</span><span class="github-stat-label" data-tr="Son 30 günde güncellenen" data-en="Updated in the last 30 days">Son 30 günde güncellenen</span></div>
+            </div>
+            <div class="github-content-grid">
+                <div class="github-panel">
+                    <div class="github-panel-heading">
+                        <h3 data-tr="Herkese Açık Depolar" data-en="Public Repositories">Herkese Açık Depolar</h3>
+                        <span class="github-live-label"><span aria-hidden="true"></span> LIVE</span>
+                    </div>
+                    <div id="github-repos" class="github-repo-grid" aria-live="polite">
+                        <p class="github-loading" data-tr="GitHub depoları yükleniyor…" data-en="Loading GitHub repositories…">GitHub depoları yükleniyor…</p>
+                    </div>
+                </div>
+                <div class="github-panel github-activity-panel">
+                    <div class="github-panel-heading">
+                        <h3 data-tr="Son Aktivite" data-en="Recent Activity">Son Aktivite</h3>
+                        <span class="github-live-label"><span aria-hidden="true"></span> LIVE</span>
+                    </div>
+                    <div id="github-events" class="github-events" aria-live="polite">
+                        <p class="github-loading" data-tr="Son hareketler yükleniyor…" data-en="Loading recent activity…">Son hareketler yükleniyor…</p>
+                    </div>
+                </div>
+            </div>
+            <p id="github-status" class="github-status" role="status" aria-live="polite"></p>
+        </section>
+
+        <!-- TECH RADAR -->
         <section id="news" class="content-section">
             <div class="section-header news-section-head">
                 <div>
-                    <h2 data-tr="Günlük Teknoloji Gündemi" data-en="Daily Tech Digest">Günlük Teknoloji Gündemi</h2>
-                    <p data-tr="Hacker News üzerinden anlık çekilen en önemli 5 teknoloji haberi — detayları okumak için başlığa tıklayın"
-                       data-en="Top 5 live tech stories from Hacker News — click any headline to read details">
-                        Hacker News üzerinden anlık çekilen en önemli 5 teknoloji haberi — detayları okumak için başlığa tıklayın
-                    </p>
+                    <span class="radar-eyebrow">DAILY TECHNOLOGY BRIEFING</span>
+                    <h2>Tech Radar</h2>
+                    <p>Her gün öne çıkan 15 teknoloji gelişmesi. Haberleri kendi sitende oku, istersen orijinal kaynağa geç.</p>
                 </div>
-                <span class="live-badge" data-tr="CANLI AKIŞ" data-en="LIVE FEED">CANLI AKIŞ</span>
+                <div class="radar-head-actions">
+                    <span class="live-badge">● GÜNLÜK GÜNCELLEME</span>
+                    <button type="button" id="techRadarRefresh" class="radar-refresh-btn">↻ Yenile</button>
+                </div>
             </div>
-
-            <div id="hn-news-list" class="news-grid">
-                <div class="news-loading" data-tr="Güncel teknoloji haberleri yükleniyor..." data-en="Loading latest tech stories...">Güncel teknoloji haberleri yükleniyor...</div>
+            <div class="radar-toolbar">
+                <div id="techRadarFilters" class="tech-radar-filters" aria-label="Haber kategorileri"></div>
+                <span id="techRadarUpdated" class="radar-updated" aria-live="polite">Güncel haberler yükleniyor…</span>
             </div>
+            <div id="hn-news-list" class="news-grid" aria-live="polite">
+                <div class="news-loading">Günün teknoloji gündemi hazırlanıyor…</div>
+            </div>
+            <div class="radar-load-more-wrap">
+                <button type="button" id="techRadarLoadMore" class="radar-load-more" hidden>Daha fazla haber göster</button>
+            </div>
+            <p class="radar-source-note">Haber verileri Hacker News üzerinden alınır. Başlık ve tartışma bilgileri kaynak gösterilerek sunulur.</p>
         </section>
 
         <!-- DEVOPS TICKET / TALEP MERKEZİ -->
@@ -217,9 +276,13 @@
             </div>
 
             <div class="card ticket-card">
-                <form name="ticket" method="POST" data-netlify="true" id="ticketForm" class="ticket-form">
+                <form name="ticket" method="POST" data-netlify="true" netlify-honeypot="bot-field" id="ticketForm" class="ticket-form">
                     <input type="hidden" name="form-name" value="ticket">
                     <input type="hidden" name="ticket-id" id="hiddenTicketId">
+                    <div class="hidden" aria-hidden="true">
+                        <label for="ticketBotField">Bu alanı boş bırakın</label>
+                        <input type="text" name="bot-field" id="ticketBotField" tabindex="-1" autocomplete="off">
+                    </div>
 
                     <div class="form-row">
                         <div class="form-group">
@@ -239,7 +302,7 @@
                             <select id="ticketCategory" name="category">
                                 <option value="internship" data-tr="Staj / Kariyer Fırsatı" data-en="Internship / Career Opportunity">Staj / Kariyer Fırsatı</option>
                                 <option value="collaboration" data-tr="Proje & Ar-Ge İş Birliği" data-en="Project & R&D Collaboration">Proje & Ar-Ge İş Birliği</option>
-                                <option value="technical" data-tr="Teknik Soru (SAP / Cloud / Linux)" data-en="Technical Inquiry (SAP / Cloud / Linux)">Teknik Soru (SAP / Cloud / Linux)</option>
+                                <option value="technical" data-tr="Teknik Soru (ERP / ASP / Sistem)" data-en="Technical Inquiry (ERP / ASP / Systems)">Teknik Soru (ERP / ASP / Sistem)</option>
                                 <option value="general" data-tr="Genel İletişim" data-en="General Inquiry">Genel İletişim</option>
                             </select>
                         </div>
@@ -259,19 +322,36 @@
                         <textarea id="ticketMessage" name="message" rows="4" required placeholder="Talebinizin detaylarını buraya yazabilirsiniz..."></textarea>
                     </div>
 
+                    <p id="ticketError" class="form-error" role="alert" hidden></p>
                     <div class="ticket-footer">
-                        <span class="muted-date" data-tr="Hedef Kutu: iletisim@kaanipek.net.tr" data-en="Target Inbox: iletisim@kaanipek.net.tr">Hedef Kutu: iletisim@kaanipek.net.tr</span>
+                        <span class="muted-date" data-tr="Web sitesi üzerinden güvenli form gönderimi" data-en="Secure form submission through this website">Web sitesi üzerinden güvenli form gönderimi</span>
                         <button type="submit" class="btn btn-primary" data-tr="🚀 Ticket Gönder" data-en="🚀 Submit Ticket">🚀 Ticket Gönder</button>
                     </div>
                 </form>
 
-                <div id="ticketSuccessBox" class="ticket-success" style="display: none;">
+                <div id="ticketSuccessBox" class="ticket-success" hidden>
                     <div class="success-header">
                         <span class="live-badge" id="generatedTicketBadge">#VKI-2026-000</span>
                         <strong data-tr="Talebiniz Başarıyla Kaydedildi!" data-en="Ticket Successfully Created!">Talebiniz Başarıyla Kaydedildi!</strong>
                     </div>
                     <p id="ticketSuccessText"></p>
                     <button type="button" id="newTicketBtn" class="btn btn-secondary" data-tr="Yeni Ticket Oluştur" data-en="Create Another Ticket">Yeni Ticket Oluştur</button>
+                </div>
+
+                <div class="ticket-lookup">
+                    <div class="ticket-lookup-heading">
+                        <h3 data-tr="Mevcut Talebimi Sorgula" data-en="Track an Existing Ticket">Mevcut Talebimi Sorgula</h3>
+                        <p data-tr="Takip numaranızı girerek talebinizin güncel durumunu görüntüleyin." data-en="Enter your reference number to view the current status of your request.">Takip numaranızı girerek talebinizin güncel durumunu görüntüleyin.</p>
+                    </div>
+                    <form id="ticketLookupForm" class="ticket-lookup-form">
+                        <div class="form-group">
+                            <label for="ticketLookupNumber" data-tr="Takip Numarası" data-en="Reference Number">Takip Numarası</label>
+                            <input type="text" id="ticketLookupNumber" name="ticketNumber" required maxlength="48" autocomplete="off" placeholder="#VKI-2026-...">
+                        </div>
+                        <button type="submit" class="btn btn-secondary" data-tr="Durumu Sorgula" data-en="Check Status">Durumu Sorgula</button>
+                    </form>
+                    <p id="ticketLookupError" class="form-error" role="alert" hidden></p>
+                    <div id="ticketLookupResult" class="ticket-lookup-result" aria-live="polite" hidden></div>
                 </div>
             </div>
         </section>
@@ -287,6 +367,7 @@
                     <a href="mailto:iletisim@kaanipek.net.tr">iletisim@kaanipek.net.tr</a>
                     <a href="/github" target="_blank" rel="noopener">GitHub</a>
                     <a href="/linkedin" target="_blank" rel="noopener">LinkedIn</a>
+                    <a href="/admin.html" aria-label="Yönetici ve editör girişi" title="Yönetim paneli">Yönetim girişi</a>
                 </div>
             </div>
         </footer>
@@ -332,6 +413,11 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script defer src="supabase-client.js"></script>
+    <script defer src="script.js"></script>
+    <script defer src="github-integration.js"></script>
+    <script defer src="development-journal.js"></script>
+    <script defer src="projects.js"></script>
 </body>
 </html>

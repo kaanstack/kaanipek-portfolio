@@ -1,2 +1,5 @@
+/yonetim  /admin.html  200
 /github    https://github.com/kaanstack               301
 /linkedin  https://www.linkedin.com/in/veyselkaanipek 301
+/blog/:slug  /blog.html?slug=:slug  200
+/news/:id  /news.html?id=:id  200
